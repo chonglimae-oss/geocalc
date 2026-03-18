@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -382,113 +382,6 @@ tr:hover td { background: var(--surface2); }
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script>
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('page-'+id).classList.add('active');
-  document.querySelectorAll('.nav-btn')[['home','sucs','carga','consol','asent'].indexOf(id)].classList.add('active');
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-function gv(id){const v=parseFloat(document.getElementById(id).value);return isNaN(v)?null:v;}
-function showErr(id,msg){const el=document.getElementById(id);if(msg){el.textContent=msg;el.classList.add('visible');}else el.classList.remove('visible');}
-
-// SUCS
-function clasificarSUCS(){
-  showErr('s-error','');document.getElementById('s-results').classList.remove('visible');
-  const grava=gv('s-grava'),arena=gv('s-arena'),finos=gv('s-finos'),ll=gv('s-ll'),lp=gv('s-lp'),d10=gv('s-d10'),d30=gv('s-d30'),d60=gv('s-d60');
-  if(finos===null){showErr('s-error','Ingresa el % de finos.');return;}
-  let ip=null,cu=null,cc=null;
-  if(ll!==null&&lp!==null)ip=ll-lp;
-  if(d10&&d30&&d60&&d10>0){cu=d60/d10;cc=(d30*d30)/(d60*d10);}
-  let simbolo,nombre,desc,color;
-  if(finos>=50){
-    if(ll===null||lp===null){showErr('s-error','Para suelos finos se requieren LL y LP.');return;}
-    if(ll<50){
-      if(ip>0.73*(ll-20)&&ip>=7){simbolo='CL';nombre='Arcilla de Baja Plasticidad';color='#c8a96e';desc='Arcilla inorgánica de baja plasticidad. Moderadamente compresible.';}
-      else if(ip<4||ip<0.73*(ll-20)){simbolo='ML';nombre='Limo de Baja Plasticidad';color='#a07850';desc='Limo inorgánico de baja plasticidad. Alta capilaridad.';}
-      else{simbolo='CL-ML';nombre='Arcilla-Limo';color='#946848';desc='Zona de transición arcilla-limo.';}
-    }else{
-      if(ip>0.73*(ll-20)){simbolo='CH';nombre='Arcilla de Alta Plasticidad';color='#e07060';desc='Arcilla inorgánica de alta plasticidad. Alta compresibilidad.';}
-      else{simbolo='MH';nombre='Limo de Alta Plasticidad';color='#c06050';desc='Limo inorgánico de alta plasticidad. Muy compresible.';}
-    }
-  }else{
-    const pG=grava!==null?grava:(100-finos-(arena||0));
-    const pA=arena!==null?arena:(100-finos-pG);
-    if(pG>=pA){
-      if(finos<5){simbolo=cu&&cc?(cu>=4&&cc>=1&&cc<=3?'GW':'GP'):'GW/GP';nombre=simbolo==='GW'?'Grava Bien Gradada':'Grava Mal Gradada';color='#6ab8a8';desc=simbolo==='GW'?'Excelente material de cimiento.':'Buena permeabilidad, usada en drenajes.';}
-      else if(finos<=12){simbolo='GM';nombre='Grava con Finos';color='#7ab8a8';desc='Grava con limos. Comportamiento intermedio.';}
-      else{simbolo=ip&&ip>0.73*((ll||0)-20)&&ip>=7?'GC':'GM';nombre=simbolo==='GC'?'Grava Arcillosa':'Grava Limosa';color='#8ab870';desc='Grava con finos cohesivos.';}
-    }else{
-      if(finos<5){simbolo=cu&&cc?(cu>=6&&cc>=1&&cc<=3?'SW':'SP'):'SW/SP';nombre=simbolo==='SW'?'Arena Bien Gradada':'Arena Mal Gradada';color='#a8c840';desc=simbolo==='SW'?'Buena resistencia al corte.':'Alta permeabilidad, susceptible a licuefacción.';}
-      else if(finos<=12){simbolo='SM';nombre='Arena con Finos';color='#b8c850';desc='Arena con finos. Resistencia intermedia.';}
-      else{simbolo=ip&&ip>0.73*((ll||0)-20)&&ip>=7?'SC':'SM';nombre=simbolo==='SC'?'Arena Arcillosa':'Arena Limosa';color='#c0b860';desc='Arena con finos cohesivos.';}
-    }
-  }
-  document.getElementById('s-symbol').textContent=simbolo;
-  document.getElementById('s-symbol').style.color=color;
-  document.getElementById('s-name').textContent=nombre;
-  document.getElementById('s-desc').textContent=desc;
-  document.getElementById('s-strip').style.background=color;
-  let meta=`<div class="meta-item"><div class="meta-label">Símbolo</div><div class="meta-value" style="color:${color}">${simbolo}</div></div>`;
-  if(finos!==null)meta+=`<div class="meta-item"><div class="meta-label">% Finos</div><div class="meta-value">${finos.toFixed(1)}%</div></div>`;
-  if(ip!==null)meta+=`<div class="meta-item"><div class="meta-label">IP</div><div class="meta-value">${ip.toFixed(1)}%</div></div>`;
-  if(cu!==null)meta+=`<div class="meta-item"><div class="meta-label">Cu</div><div class="meta-value">${cu.toFixed(2)}</div></div>`;
-  if(cc!==null)meta+=`<div class="meta-item"><div class="meta-label">Cc</div><div class="meta-value">${cc.toFixed(2)}</div></div>`;
-  document.getElementById('s-meta').innerHTML=meta;
-  document.getElementById('s-results').classList.add('visible');
-}
-function resetSUCS(){['s-grava','s-arena','s-finos','s-ll','s-lp','s-d10','s-d30','s-d60'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('s-results').classList.remove('visible');}
-
-// CARGA
-let tipoZapata='corrida';
-function setTipo(t){tipoZapata=t;['corrida','cuadrada','circular'].forEach(x=>document.getElementById('c-btn-'+x).classList.remove('active'));document.getElementById('c-btn-'+t).classList.add('active');const L=document.getElementById('c-L');L.disabled=t!=='corrida';if(t!=='corrida')L.value='';}
-function g2r(d){return d*Math.PI/180;}
-function Nq(p){const r=g2r(p);return Math.exp(Math.PI*Math.tan(r))*Math.pow(Math.tan(Math.PI/4+r/2),2);}
-function Nc(p){return p===0?5.14:(Nq(p)-1)/Math.tan(g2r(p));}
-function Ng(p,m){const r=g2r(p);if(m==='t')return 2*(Nq(p)+1)*Math.tan(r);if(m==='m')return(Nq(p)-1)*Math.tan(1.4*r);if(m==='h')return 1.5*(Nq(p)-1)*Math.tan(r);return 2*(Nq(p)+1)*Math.tan(r);}
-function cT(c,p,g,B,L,D){const q=g*D;let sc=1,sq=1,sg=1;if(tipoZapata==='cuadrada'){sc=1.3;sg=0.8;}if(tipoZapata==='circular'){sc=1.3;sg=0.6;}return c*Nc(p)*sc+q*Nq(p)*sq+0.5*g*B*Ng(p,'t')*sg;}
-function cM(c,p,g,B,L,D){const r=g2r(p),q=g*D,rt=tipoZapata==='corrida'?0:1,Kp=Math.pow(Math.tan(Math.PI/4+r/2),2);const sc=1+0.2*rt*Kp,sq=p>10?1+0.1*rt*Kp:1,sg=p>10?sq:1;const k=D/B,dc=p>10?1+0.2*Math.sqrt(Nq(p)/Nc(p))*k:1+0.2*k,dq=p>10?1+0.1*Math.sqrt(Nq(p)/Nc(p))*k:1,dg=dq;return c*Nc(p)*sc*dc+q*Nq(p)*sq*dq+0.5*g*B*Ng(p,'m')*sg*dg;}
-function cH(c,p,g,B,L,D){const r=g2r(p),q=g*D,rt=tipoZapata==='corrida'?0:1;const sc=p===0?1+0.2*rt:1+rt*(Nq(p)/Nc(p)),sq=1+rt*Math.tan(r),sg=tipoZapata==='corrida'?1:Math.max(1-0.4*rt,0.6);const k=D<=B?D/B:Math.atan(D/B),dc=1+0.4*k,dq=1+2*Math.tan(r)*Math.pow(1-Math.sin(r),2)*k;return c*Nc(p)*sc*dc+q*Nq(p)*sq*dq+0.5*g*B*Ng(p,'h')*sg;}
-function cV(c,p,g,B,L,D){const r=g2r(p),q=g*D,rt=tipoZapata==='corrida'?0:1;const sc=p===0?1+0.2*rt:1+rt*(Nq(p)/Nc(p)),sq=1+rt*Math.tan(r),sg=tipoZapata==='corrida'?1:Math.max(1-0.4*rt,0.6);const k=D<=B?D/B:Math.atan(D/B),dq=1+2*Math.tan(r)*Math.pow(1-Math.sin(r),2)*k,dc=1+(1-Math.sin(r))/(Nc(p)*Math.tan(r||0.001))*k*2;return c*Nc(p)*sc*dc+q*Nq(p)*sq*dq+0.5*g*B*Ng(p,'v')*sg;}
-function fC(v,u){return u==='ton'?(v*0.101972).toFixed(2):v.toFixed(2);}
-function calcCarga(){
-  showErr('c-error','');document.getElementById('c-results').classList.remove('visible');
-  const c=gv('c-c')??0,phi=gv('c-phi'),gamma=gv('c-gamma'),B=gv('c-B'),Df=gv('c-Df'),fs=parseFloat(document.getElementById('c-fs').value),uni=document.getElementById('c-uni').value;
-  let L=gv('c-L');if(tipoZapata!=='corrida')L=B;
-  if(phi===null){showErr('c-error','Ingresa φ.');return;}if(!gamma){showErr('c-error','Ingresa γ.');return;}if(!B){showErr('c-error','Ingresa B.');return;}if(!Df){showErr('c-error','Ingresa Df.');return;}if(tipoZapata==='corrida'&&L===null){showErr('c-error','Ingresa L.');return;}
-  const ul=uni==='kPa'?'kPa':'t/m²';
-  [['terz',cT],['mey',cM],['han',cH],['ves',cV]].forEach(([id,fn])=>{const qu=fn(c,phi,gamma,B,L||B,Df),qa=qu/fs;document.getElementById('c-qu-'+id).textContent=fC(qu,uni);document.getElementById('c-unit-'+id).textContent='q_ult ('+ul+')';document.getElementById('c-qadm-'+id).textContent=fC(qa,uni)+' '+ul;});
-  document.getElementById('c-sum-tipo').textContent=tipoZapata.toUpperCase();document.getElementById('c-sum-cp').textContent=c+' / '+phi+'°';document.getElementById('c-sum-bl').textContent=tipoZapata==='corrida'?B+'×'+L:B+'×'+B;document.getElementById('c-sum-df').textContent=Df+' m';
-  document.getElementById('c-results').classList.add('visible');
-}
-function resetCarga(){['c-c','c-phi','c-gamma','c-B','c-L','c-Df'].forEach(id=>{const e=document.getElementById(id);if(e&&!e.disabled)e.value='';});document.getElementById('c-results').classList.remove('visible');}
-
-// CONSOLIDACIÓN
-let drenaje='doble',chartInst=null;
-function setDrenaje(d){drenaje=d;['doble','simple'].forEach(x=>document.getElementById('d-btn-'+x).classList.remove('active'));document.getElementById('d-btn-'+d).classList.add('active');}
-function calcU(Tv){if(Tv<=0)return 0;if(Tv<0.217)return Math.sqrt(4*Tv/Math.PI)*100;return(1-Math.exp(-1.7812*Tv-0.2316*Tv*Tv+0.0139*Tv*Tv*Tv))*100;}
-function fS(v,u){if(u==='m')return(v/100).toFixed(3);if(u==='mm')return(v*10).toFixed(1);return v.toFixed(2);}
-function calcConsol(){
-  showErr('d-error','');document.getElementById('d-results').classList.remove('visible');
-  const H=gv('d-H'),Cc=gv('d-Cc'),e0=gv('d-e0'),s0=gv('d-s0'),ds=gv('d-ds'),Cv=gv('d-Cv'),t=gv('d-t'),uni=document.getElementById('d-uni').value;
-  if(!H){showErr('d-error','Ingresa H.');return;}if(!Cc){showErr('d-error','Ingresa Cc.');return;}if(!e0){showErr('d-error','Ingresa e₀.');return;}if(!s0){showErr('d-error','Ingresa σ\'₀.');return;}if(!ds){showErr('d-error','Ingresa Δσ.');return;}if(!Cv){showErr('d-error','Ingresa Cv.');return;}if(!t){showErr('d-error','Ingresa t.');return;}
-  const Hdr=drenaje==='doble'?H/2:H,Hcm=Hdr*100,Sc=(Cc*H*100)/(1+e0)*Math.log10((s0+ds)/s0),Tv=(Cv*t*86400)/(Hcm*Hcm),U=Math.min(calcU(Tv),100),St=(U/100)*Sc;
-  document.getElementById('d-sc').textContent=fS(Sc,uni);document.getElementById('d-sc-unit').textContent=uni;document.getElementById('d-u').textContent=U.toFixed(1)+'%';document.getElementById('d-st').textContent=fS(St,uni);document.getElementById('d-st-unit').textContent=uni;
-  const tiempos=[1,7,30,90,180,365,730,1825,3650];
-  document.getElementById('d-tabla').innerHTML=tiempos.map(tx=>{const ts=tx*86400,tv=(Cv*ts)/(Hcm*Hcm),u=Math.min(calcU(tv),100),st=(u/100)*Sc,lbl=tx>=365?(tx/365).toFixed(1)+' años':tx+' días';return`<tr><td>${lbl}</td><td>${tv.toFixed(4)}</td><td class="td-u">${u.toFixed(1)}%</td><td class="td-sc">${fS(st,uni)} ${uni}</td></tr>`;}).join('');
-  const tMax=Math.max(t*2,3650),pts=60,labels=[],data=[];
-  for(let i=0;i<=pts;i++){const ti=(tMax/pts)*i,tvi=(Cv*ti*86400)/(Hcm*Hcm),ui=Math.min(calcU(tvi),100),sti=(ui/100)*Sc;labels.push(ti<365?ti.toFixed(0)+'d':(ti/365).toFixed(1)+'a');data.push(parseFloat(fS(sti,uni)));}
-  const ctx=document.getElementById('d-chart').getContext('2d');
-  if(chartInst)chartInst.destroy();
-  chartInst=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Asentamiento ('+uni+')',data,borderColor:'#6ab8a8',backgroundColor:'rgba(106,184,168,0.08)',borderWidth:2.5,pointRadius:0,fill:true,tension:0.4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{family:'DM Mono',size:10},color:'#6a7058',maxTicksLimit:10},grid:{color:'rgba(42,46,32,0.8)'}},y:{reverse:true,title:{display:true,text:'Asentamiento ('+uni+')',font:{family:'DM Mono',size:11},color:'#6a7058'},ticks:{font:{family:'DM Mono',size:10},color:'#6a7058'},grid:{color:'rgba(42,46,32,0.8)'}}}}}});
-  document.getElementById('d-results').classList.add('visible');
-}
-function resetConsol(){['d-H','d-Cc','d-e0','d-s0','d-ds','d-Cv','d-t'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('d-results').classList.remove('visible');if(chartInst){chartInst.destroy();chartInst=null;}}
-</script>
-<!-- ASENTAMIENTOS -->
 <div class="page" id="page-asent">
   <div class="tool-page">
     <div class="page-header">
@@ -640,6 +533,112 @@ function resetConsol(){['d-H','d-Cc','d-e0','d-s0','d-ds','d-Cv','d-t'].forEach(
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-btn')[['home','sucs','carga','consol','asent'].indexOf(id)].classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function gv(id){const v=parseFloat(document.getElementById(id).value);return isNaN(v)?null:v;}
+function showErr(id,msg){const el=document.getElementById(id);if(msg){el.textContent=msg;el.classList.add('visible');}else el.classList.remove('visible');}
+
+// SUCS
+function clasificarSUCS(){
+  showErr('s-error','');document.getElementById('s-results').classList.remove('visible');
+  const grava=gv('s-grava'),arena=gv('s-arena'),finos=gv('s-finos'),ll=gv('s-ll'),lp=gv('s-lp'),d10=gv('s-d10'),d30=gv('s-d30'),d60=gv('s-d60');
+  if(finos===null){showErr('s-error','Ingresa el % de finos.');return;}
+  let ip=null,cu=null,cc=null;
+  if(ll!==null&&lp!==null)ip=ll-lp;
+  if(d10&&d30&&d60&&d10>0){cu=d60/d10;cc=(d30*d30)/(d60*d10);}
+  let simbolo,nombre,desc,color;
+  if(finos>=50){
+    if(ll===null||lp===null){showErr('s-error','Para suelos finos se requieren LL y LP.');return;}
+    if(ll<50){
+      if(ip>0.73*(ll-20)&&ip>=7){simbolo='CL';nombre='Arcilla de Baja Plasticidad';color='#c8a96e';desc='Arcilla inorgánica de baja plasticidad. Moderadamente compresible.';}
+      else if(ip<4||ip<0.73*(ll-20)){simbolo='ML';nombre='Limo de Baja Plasticidad';color='#a07850';desc='Limo inorgánico de baja plasticidad. Alta capilaridad.';}
+      else{simbolo='CL-ML';nombre='Arcilla-Limo';color='#946848';desc='Zona de transición arcilla-limo.';}
+    }else{
+      if(ip>0.73*(ll-20)){simbolo='CH';nombre='Arcilla de Alta Plasticidad';color='#e07060';desc='Arcilla inorgánica de alta plasticidad. Alta compresibilidad.';}
+      else{simbolo='MH';nombre='Limo de Alta Plasticidad';color='#c06050';desc='Limo inorgánico de alta plasticidad. Muy compresible.';}
+    }
+  }else{
+    const pG=grava!==null?grava:(100-finos-(arena||0));
+    const pA=arena!==null?arena:(100-finos-pG);
+    if(pG>=pA){
+      if(finos<5){simbolo=cu&&cc?(cu>=4&&cc>=1&&cc<=3?'GW':'GP'):'GW/GP';nombre=simbolo==='GW'?'Grava Bien Gradada':'Grava Mal Gradada';color='#6ab8a8';desc=simbolo==='GW'?'Excelente material de cimiento.':'Buena permeabilidad, usada en drenajes.';}
+      else if(finos<=12){simbolo='GM';nombre='Grava con Finos';color='#7ab8a8';desc='Grava con limos. Comportamiento intermedio.';}
+      else{simbolo=ip&&ip>0.73*((ll||0)-20)&&ip>=7?'GC':'GM';nombre=simbolo==='GC'?'Grava Arcillosa':'Grava Limosa';color='#8ab870';desc='Grava con finos cohesivos.';}
+    }else{
+      if(finos<5){simbolo=cu&&cc?(cu>=6&&cc>=1&&cc<=3?'SW':'SP'):'SW/SP';nombre=simbolo==='SW'?'Arena Bien Gradada':'Arena Mal Gradada';color='#a8c840';desc=simbolo==='SW'?'Buena resistencia al corte.':'Alta permeabilidad, susceptible a licuefacción.';}
+      else if(finos<=12){simbolo='SM';nombre='Arena con Finos';color='#b8c850';desc='Arena con finos. Resistencia intermedia.';}
+      else{simbolo=ip&&ip>0.73*((ll||0)-20)&&ip>=7?'SC':'SM';nombre=simbolo==='SC'?'Arena Arcillosa':'Arena Limosa';color='#c0b860';desc='Arena con finos cohesivos.';}
+    }
+  }
+  document.getElementById('s-symbol').textContent=simbolo;
+  document.getElementById('s-symbol').style.color=color;
+  document.getElementById('s-name').textContent=nombre;
+  document.getElementById('s-desc').textContent=desc;
+  document.getElementById('s-strip').style.background=color;
+  let meta=`<div class="meta-item"><div class="meta-label">Símbolo</div><div class="meta-value" style="color:${color}">${simbolo}</div></div>`;
+  if(finos!==null)meta+=`<div class="meta-item"><div class="meta-label">% Finos</div><div class="meta-value">${finos.toFixed(1)}%</div></div>`;
+  if(ip!==null)meta+=`<div class="meta-item"><div class="meta-label">IP</div><div class="meta-value">${ip.toFixed(1)}%</div></div>`;
+  if(cu!==null)meta+=`<div class="meta-item"><div class="meta-label">Cu</div><div class="meta-value">${cu.toFixed(2)}</div></div>`;
+  if(cc!==null)meta+=`<div class="meta-item"><div class="meta-label">Cc</div><div class="meta-value">${cc.toFixed(2)}</div></div>`;
+  document.getElementById('s-meta').innerHTML=meta;
+  document.getElementById('s-results').classList.add('visible');
+}
+function resetSUCS(){['s-grava','s-arena','s-finos','s-ll','s-lp','s-d10','s-d30','s-d60'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('s-results').classList.remove('visible');}
+
+// CARGA
+let tipoZapata='corrida';
+function setTipo(t){tipoZapata=t;['corrida','cuadrada','circular'].forEach(x=>document.getElementById('c-btn-'+x).classList.remove('active'));document.getElementById('c-btn-'+t).classList.add('active');const L=document.getElementById('c-L');L.disabled=t!=='corrida';if(t!=='corrida')L.value='';}
+function g2r(d){return d*Math.PI/180;}
+function Nq(p){const r=g2r(p);return Math.exp(Math.PI*Math.tan(r))*Math.pow(Math.tan(Math.PI/4+r/2),2);}
+function Nc(p){return p===0?5.14:(Nq(p)-1)/Math.tan(g2r(p));}
+function Ng(p,m){const r=g2r(p);if(m==='t')return 2*(Nq(p)+1)*Math.tan(r);if(m==='m')return(Nq(p)-1)*Math.tan(1.4*r);if(m==='h')return 1.5*(Nq(p)-1)*Math.tan(r);return 2*(Nq(p)+1)*Math.tan(r);}
+function cT(c,p,g,B,L,D){const q=g*D;let sc=1,sq=1,sg=1;if(tipoZapata==='cuadrada'){sc=1.3;sg=0.8;}if(tipoZapata==='circular'){sc=1.3;sg=0.6;}return c*Nc(p)*sc+q*Nq(p)*sq+0.5*g*B*Ng(p,'t')*sg;}
+function cM(c,p,g,B,L,D){const r=g2r(p),q=g*D,rt=tipoZapata==='corrida'?0:1,Kp=Math.pow(Math.tan(Math.PI/4+r/2),2);const sc=1+0.2*rt*Kp,sq=p>10?1+0.1*rt*Kp:1,sg=p>10?sq:1;const k=D/B,dc=p>10?1+0.2*Math.sqrt(Nq(p)/Nc(p))*k:1+0.2*k,dq=p>10?1+0.1*Math.sqrt(Nq(p)/Nc(p))*k:1,dg=dq;return c*Nc(p)*sc*dc+q*Nq(p)*sq*dq+0.5*g*B*Ng(p,'m')*sg*dg;}
+function cH(c,p,g,B,L,D){const r=g2r(p),q=g*D,rt=tipoZapata==='corrida'?0:1;const sc=p===0?1+0.2*rt:1+rt*(Nq(p)/Nc(p)),sq=1+rt*Math.tan(r),sg=tipoZapata==='corrida'?1:Math.max(1-0.4*rt,0.6);const k=D<=B?D/B:Math.atan(D/B),dc=1+0.4*k,dq=1+2*Math.tan(r)*Math.pow(1-Math.sin(r),2)*k;return c*Nc(p)*sc*dc+q*Nq(p)*sq*dq+0.5*g*B*Ng(p,'h')*sg;}
+function cV(c,p,g,B,L,D){const r=g2r(p),q=g*D,rt=tipoZapata==='corrida'?0:1;const sc=p===0?1+0.2*rt:1+rt*(Nq(p)/Nc(p)),sq=1+rt*Math.tan(r),sg=tipoZapata==='corrida'?1:Math.max(1-0.4*rt,0.6);const k=D<=B?D/B:Math.atan(D/B),dq=1+2*Math.tan(r)*Math.pow(1-Math.sin(r),2)*k,dc=1+(1-Math.sin(r))/(Nc(p)*Math.tan(r||0.001))*k*2;return c*Nc(p)*sc*dc+q*Nq(p)*sq*dq+0.5*g*B*Ng(p,'v')*sg;}
+function fC(v,u){return u==='ton'?(v*0.101972).toFixed(2):v.toFixed(2);}
+function calcCarga(){
+  showErr('c-error','');document.getElementById('c-results').classList.remove('visible');
+  const c=gv('c-c')??0,phi=gv('c-phi'),gamma=gv('c-gamma'),B=gv('c-B'),Df=gv('c-Df'),fs=parseFloat(document.getElementById('c-fs').value),uni=document.getElementById('c-uni').value;
+  let L=gv('c-L');if(tipoZapata!=='corrida')L=B;
+  if(phi===null){showErr('c-error','Ingresa φ.');return;}if(!gamma){showErr('c-error','Ingresa γ.');return;}if(!B){showErr('c-error','Ingresa B.');return;}if(!Df){showErr('c-error','Ingresa Df.');return;}if(tipoZapata==='corrida'&&L===null){showErr('c-error','Ingresa L.');return;}
+  const ul=uni==='kPa'?'kPa':'t/m²';
+  [['terz',cT],['mey',cM],['han',cH],['ves',cV]].forEach(([id,fn])=>{const qu=fn(c,phi,gamma,B,L||B,Df),qa=qu/fs;document.getElementById('c-qu-'+id).textContent=fC(qu,uni);document.getElementById('c-unit-'+id).textContent='q_ult ('+ul+')';document.getElementById('c-qadm-'+id).textContent=fC(qa,uni)+' '+ul;});
+  document.getElementById('c-sum-tipo').textContent=tipoZapata.toUpperCase();document.getElementById('c-sum-cp').textContent=c+' / '+phi+'°';document.getElementById('c-sum-bl').textContent=tipoZapata==='corrida'?B+'×'+L:B+'×'+B;document.getElementById('c-sum-df').textContent=Df+' m';
+  document.getElementById('c-results').classList.add('visible');
+}
+function resetCarga(){['c-c','c-phi','c-gamma','c-B','c-L','c-Df'].forEach(id=>{const e=document.getElementById(id);if(e&&!e.disabled)e.value='';});document.getElementById('c-results').classList.remove('visible');}
+
+// CONSOLIDACIÓN
+let drenaje='doble',chartInst=null;
+function setDrenaje(d){drenaje=d;['doble','simple'].forEach(x=>document.getElementById('d-btn-'+x).classList.remove('active'));document.getElementById('d-btn-'+d).classList.add('active');}
+function calcU(Tv){if(Tv<=0)return 0;if(Tv<0.217)return Math.sqrt(4*Tv/Math.PI)*100;return(1-Math.exp(-1.7812*Tv-0.2316*Tv*Tv+0.0139*Tv*Tv*Tv))*100;}
+function fS(v,u){if(u==='m')return(v/100).toFixed(3);if(u==='mm')return(v*10).toFixed(1);return v.toFixed(2);}
+function calcConsol(){
+  showErr('d-error','');document.getElementById('d-results').classList.remove('visible');
+  const H=gv('d-H'),Cc=gv('d-Cc'),e0=gv('d-e0'),s0=gv('d-s0'),ds=gv('d-ds'),Cv=gv('d-Cv'),t=gv('d-t'),uni=document.getElementById('d-uni').value;
+  if(!H){showErr('d-error','Ingresa H.');return;}if(!Cc){showErr('d-error','Ingresa Cc.');return;}if(!e0){showErr('d-error','Ingresa e₀.');return;}if(!s0){showErr('d-error','Ingresa σ\'₀.');return;}if(!ds){showErr('d-error','Ingresa Δσ.');return;}if(!Cv){showErr('d-error','Ingresa Cv.');return;}if(!t){showErr('d-error','Ingresa t.');return;}
+  const Hdr=drenaje==='doble'?H/2:H,Hcm=Hdr*100,Sc=(Cc*H*100)/(1+e0)*Math.log10((s0+ds)/s0),Tv=(Cv*t*86400)/(Hcm*Hcm),U=Math.min(calcU(Tv),100),St=(U/100)*Sc;
+  document.getElementById('d-sc').textContent=fS(Sc,uni);document.getElementById('d-sc-unit').textContent=uni;document.getElementById('d-u').textContent=U.toFixed(1)+'%';document.getElementById('d-st').textContent=fS(St,uni);document.getElementById('d-st-unit').textContent=uni;
+  const tiempos=[1,7,30,90,180,365,730,1825,3650];
+  document.getElementById('d-tabla').innerHTML=tiempos.map(tx=>{const ts=tx*86400,tv=(Cv*ts)/(Hcm*Hcm),u=Math.min(calcU(tv),100),st=(u/100)*Sc,lbl=tx>=365?(tx/365).toFixed(1)+' años':tx+' días';return`<tr><td>${lbl}</td><td>${tv.toFixed(4)}</td><td class="td-u">${u.toFixed(1)}%</td><td class="td-sc">${fS(st,uni)} ${uni}</td></tr>`;}).join('');
+  const tMax=Math.max(t*2,3650),pts=60,labels=[],data=[];
+  for(let i=0;i<=pts;i++){const ti=(tMax/pts)*i,tvi=(Cv*ti*86400)/(Hcm*Hcm),ui=Math.min(calcU(tvi),100),sti=(ui/100)*Sc;labels.push(ti<365?ti.toFixed(0)+'d':(ti/365).toFixed(1)+'a');data.push(parseFloat(fS(sti,uni)));}
+  const ctx=document.getElementById('d-chart').getContext('2d');
+  if(chartInst)chartInst.destroy();
+  chartInst=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Asentamiento ('+uni+')',data,borderColor:'#6ab8a8',backgroundColor:'rgba(106,184,168,0.08)',borderWidth:2.5,pointRadius:0,fill:true,tension:0.4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{family:'DM Mono',size:10},color:'#6a7058',maxTicksLimit:10},grid:{color:'rgba(42,46,32,0.8)'}},y:{reverse:true,title:{display:true,text:'Asentamiento ('+uni+')',font:{family:'DM Mono',size:11},color:'#6a7058'},ticks:{font:{family:'DM Mono',size:10},color:'#6a7058'},grid:{color:'rgba(42,46,32,0.8)'}}}}}});
+  document.getElementById('d-results').classList.add('visible');
+}
+function resetConsol(){['d-H','d-Cc','d-e0','d-s0','d-ds','d-Cv','d-t'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('d-results').classList.remove('visible');if(chartInst){chartInst.destroy();chartInst=null;}}
+</script>
+<!-- ASENTAMIENTOS -->
 <script>
 // ── ASENTAMIENTOS ──
 function showATab(id) {
