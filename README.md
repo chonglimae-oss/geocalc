@@ -1,2 +1,746 @@
-# geocalc
-Herramientas geotécnicas 
+!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoCalc — Herramientas Geotécnicas</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,700;0,900;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0f0c;
+  --surface: #161810;
+  --surface2: #1c1e14;
+  --border: #2a2e20;
+  --accent: #a8c840;
+  --accent2: #c8a96e;
+  --accent3: #6ab8a8;
+  --text: #e8ead8;
+  --muted: #6a7058;
+  --dark: #0a0b08;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; }
+body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 60% 40% at 80% 10%, rgba(168,200,64,0.05) 0%, transparent 60%), radial-gradient(ellipse 50% 50% at 20% 80%, rgba(106,184,168,0.04) 0%, transparent 60%); pointer-events: none; z-index: 0; }
+
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(14,15,12,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 32px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { font-family: 'Fraunces', serif; font-size: 1.3rem; font-weight: 900; letter-spacing: -1px; }
+.nav-logo span { color: var(--accent); font-style: italic; }
+.nav-links { display: flex; gap: 4px; }
+.nav-btn { background: none; border: none; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1px; padding: 7px 14px; border-radius: 3px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
+.nav-btn:hover { color: var(--text); background: var(--surface2); }
+.nav-btn.active { color: var(--accent); background: rgba(168,200,64,0.1); }
+
+.page { display: none; padding-top: 60px; }
+.page.active { display: block; }
+
+/* HOME */
+.home { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 80px 24px; }
+.home-tag { display: inline-flex; align-items: center; gap: 8px; background: rgba(168,200,64,0.1); border: 1px solid rgba(168,200,64,0.2); color: var(--accent); font-size: 10px; letter-spacing: 2px; padding: 6px 14px; border-radius: 100px; margin-bottom: 24px; }
+.home h1 { font-family: 'Fraunces', serif; font-size: clamp(3rem, 8vw, 5.5rem); font-weight: 900; line-height: 0.95; letter-spacing: -3px; margin-bottom: 24px; }
+.home h1 em { font-style: italic; color: var(--accent); }
+.home p { font-size: 13px; color: var(--muted); line-height: 1.7; max-width: 480px; margin-bottom: 60px; }
+.tools-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.tools-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 48px; }
+.tool-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 28px 24px; cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden; }
+.tool-card::before { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; transform: scaleX(0); transform-origin: left; transition: transform 0.3s; }
+.tool-card.sucs::before { background: var(--accent2); }
+.tool-card.carga::before { background: var(--accent); }
+.tool-card.consol::before { background: var(--accent3); }
+.tool-card.asent::before { background: #d87a6a; }
+.tool-card:hover { border-color: rgba(168,200,64,0.2); transform: translateY(-4px); background: var(--surface2); }
+.tool-card:hover::before { transform: scaleX(1); }
+.tool-icon { font-size: 28px; margin-bottom: 16px; display: block; }
+.tool-number { font-size: 10px; letter-spacing: 2px; color: var(--muted); margin-bottom: 8px; }
+.tool-name { font-family: 'Fraunces', serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; line-height: 1.2; }
+.tool-card.sucs .tool-name { color: var(--accent2); }
+.tool-card.carga .tool-name { color: var(--accent); }
+.tool-card.consol .tool-name { color: var(--accent3); }
+.tool-card.asent .tool-name { color: #d87a6a; }
+.tool-desc { font-size: 11px; color: var(--muted); line-height: 1.6; }
+.tool-arrow { position: absolute; top: 24px; right: 24px; color: var(--border); font-size: 16px; transition: all 0.2s; }
+.tool-card:hover .tool-arrow { color: var(--accent); transform: translate(2px,-2px); }
+.stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+.stat-item { border-top: 1px solid var(--border); padding-top: 20px; }
+.stat-value { font-family: 'Fraunces', serif; font-size: 2.5rem; font-weight: 900; color: var(--accent); letter-spacing: -2px; line-height: 1; margin-bottom: 6px; }
+.stat-label { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+
+/* TOOL PAGES */
+.tool-page { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
+.page-header { margin-bottom: 32px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.page-header h2 { font-family: 'Fraunces', serif; font-size: clamp(1.8rem,5vw,2.8rem); font-weight: 900; letter-spacing: -1px; line-height: 1.1; }
+.back-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 8px 16px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1px; cursor: pointer; border-radius: 3px; transition: all 0.2s; white-space: nowrap; }
+.back-btn:hover { border-color: var(--accent); color: var(--accent); }
+.divider { height: 1px; background: linear-gradient(90deg, var(--border), transparent); margin: 0 0 28px; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 18px; }
+.form-section { padding: 22px; border-right: 1px solid var(--border); }
+.form-section:last-child { border-right: none; }
+.section-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.field { margin-bottom: 12px; }
+.field:last-child { margin-bottom: 0; }
+label { display: block; font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 5px; }
+input[type="number"], select { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 9px 12px; font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text); transition: border-color 0.2s; outline: none; -moz-appearance: textfield; }
+input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(168,200,64,0.1); }
+input::placeholder { color: var(--border); }
+select option { background: var(--surface); }
+
+.btn-calc { width: 100%; background: var(--accent); color: var(--dark); border: none; padding: 16px; font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; cursor: pointer; border-radius: 3px; transition: all 0.2s; margin-bottom: 20px; }
+.btn-calc:hover { background: #bcd830; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(168,200,64,0.2); }
+.error-box { display: none; background: rgba(192,57,43,0.1); border: 1px solid rgba(192,57,43,0.3); border-radius: 3px; padding: 12px 16px; font-size: 12px; color: #e07060; margin-bottom: 14px; }
+.error-box.visible { display: block; }
+.results-box { display: none; }
+.results-box.visible { display: block; animation: slideUp 0.4s cubic-bezier(0.4,0,0.2,1) both; }
+.btn-reset { background: none; border: 1px solid var(--border); color: var(--muted); padding: 8px 20px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1px; cursor: pointer; border-radius: 3px; transition: all 0.2s; margin-top: 8px; }
+.btn-reset:hover { border-color: var(--accent); color: var(--accent); }
+
+/* tipo/drenaje */
+.tipo-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 16px; }
+.tipo-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 10px 8px; cursor: pointer; text-align: center; transition: all 0.2s; font-family: 'DM Mono', monospace; }
+.tipo-btn .tipo-icon { font-size: 18px; margin-bottom: 4px; }
+.tipo-btn .tipo-name { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+.tipo-btn.active { background: var(--accent); border-color: var(--accent); }
+.tipo-btn.active .tipo-name { color: var(--dark); }
+.drenaje-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 16px; }
+.drenaje-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 12px; cursor: pointer; text-align: center; transition: all 0.2s; font-family: 'DM Mono', monospace; }
+.drenaje-btn .d-icon { font-size: 18px; margin-bottom: 4px; }
+.drenaje-btn .d-name { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+.drenaje-btn .d-desc { font-size: 10px; color: var(--muted); margin-top: 2px; opacity: 0.6; }
+.drenaje-btn.active { background: var(--accent3); border-color: var(--accent3); }
+.drenaje-btn.active .d-name, .drenaje-btn.active .d-desc { color: var(--dark); }
+
+/* SUCS results */
+.sucs-result { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 14px; }
+.sucs-strip { height: 5px; }
+.sucs-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.sucs-symbol { font-family: 'Fraunces', serif; font-size: 3.5rem; font-weight: 900; line-height: 1; letter-spacing: -2px; }
+.sucs-name { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 6px; }
+.sucs-desc { font-size: 12px; color: var(--muted); line-height: 1.6; max-width: 360px; }
+.sucs-body { padding: 16px 24px; }
+.sucs-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px,1fr)); gap: 10px; }
+.meta-item { background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 10px 12px; }
+.meta-label { font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 4px; }
+.meta-value { font-family: 'Fraunces', serif; font-size: 1rem; font-weight: 700; }
+
+/* Carga results */
+.summary-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 18px 22px; margin-bottom: 14px; }
+.summary-card h3 { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+.summary-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+.summary-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 4px; }
+.summary-value { font-family: 'Fraunces', serif; font-size: 1rem; font-weight: 700; color: var(--accent2); }
+.result-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 14px; }
+.result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+.result-card-header { padding: 12px 16px 8px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.result-method { font-family: 'Fraunces', serif; font-size: 1rem; font-weight: 700; }
+.result-tag { font-size: 10px; color: var(--muted); background: var(--bg); padding: 2px 8px; border-radius: 2px; border: 1px solid var(--border); }
+.result-card-body { padding: 14px 16px; }
+.result-qu { font-family: 'Fraunces', serif; font-size: 1.8rem; font-weight: 900; color: var(--accent); line-height: 1; margin-bottom: 4px; }
+.result-unit { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 10px; }
+.result-qadm { display: flex; justify-content: space-between; background: var(--bg); border: 1px solid var(--border); border-radius: 2px; padding: 8px 10px; }
+.result-qadm-label { font-size: 10px; color: var(--muted); }
+.result-qadm-value { font-family: 'Fraunces', serif; font-size: 0.95rem; font-weight: 700; color: var(--accent3); }
+
+/* Consolidación results */
+.main-results { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 14px; }
+.main-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 18px; text-align: center; }
+.main-card-label { font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+.main-card-value { font-family: 'Fraunces', serif; font-size: 1.8rem; font-weight: 900; color: var(--accent3); line-height: 1; margin-bottom: 4px; }
+.main-card-unit { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+.table-section { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 14px; }
+.table-header-row { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); }
+table { width: 100%; border-collapse: collapse; }
+th { padding: 8px 14px; text-align: left; font-size: 10px; letter-spacing: 2px; color: var(--muted); background: var(--bg); border-bottom: 1px solid var(--border); text-transform: uppercase; }
+td { padding: 8px 14px; font-size: 12px; border-bottom: 1px solid var(--border); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface2); }
+.td-u { color: var(--accent); }
+.td-sc { color: var(--accent); font-family: 'Fraunces', serif; font-weight: 700; }
+.chart-section { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 20px; margin-bottom: 14px; }
+.chart-title { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+
+@keyframes fadeIn { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }
+@keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+@media (max-width:640px) {
+  nav { padding: 0 16px; }
+  .nav-btn { font-size: 9px; padding: 6px 8px; }
+  .tools-grid, .form-grid { grid-template-columns: 1fr; }
+  .form-section { border-right: none; border-bottom: 1px solid var(--border); }
+  .result-grid, .main-results { grid-template-columns: 1fr; }
+  .summary-grid, .stats-grid { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">Geo<span>Calc</span></div>
+  <div class="nav-links">
+    <button class="nav-btn active" onclick="showPage('home')">Inicio</button>
+    <button class="nav-btn" onclick="showPage('sucs')">SUCS</button>
+    <button class="nav-btn" onclick="showPage('carga')">Cap. Carga</button>
+    <button class="nav-btn" onclick="showPage('consol')">Consolidación</button>
+    <button class="nav-btn" onclick="showPage('asent')">Asentamientos</button>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="home">
+    <div class="home-tag">▶ HERRAMIENTAS GEOTÉCNICAS</div>
+    <h1>Geo<em>Calc</em></h1>
+    <p>// Plataforma de cálculo geotécnico. Clasificación de suelos, capacidad de carga y análisis de consolidación — todo en un solo lugar.</p>
+    <div class="tools-label">// Selecciona una herramienta</div>
+    <div class="tools-grid">
+      <div class="tool-card sucs" onclick="showPage('sucs')">
+        <span class="tool-arrow">↗</span>
+        <span class="tool-icon">🪨</span>
+        <div class="tool-number">HERRAMIENTA 01</div>
+        <div class="tool-name">Clasificación SUCS</div>
+        <div class="tool-desc">Sistema Unificado según ASTM D2487. GW, GP, CL, CH y todos los grupos.</div>
+      </div>
+      <div class="tool-card carga" onclick="showPage('carga')">
+        <span class="tool-arrow">↗</span>
+        <span class="tool-icon">🏗️</span>
+        <div class="tool-number">HERRAMIENTA 02</div>
+        <div class="tool-name">Capacidad de Carga</div>
+        <div class="tool-desc">Zapatas corridas, cuadradas y circulares. Terzaghi, Meyerhof, Hansen y Vesic.</div>
+      </div>
+      <div class="tool-card consol" onclick="showPage('consol')">
+        <span class="tool-arrow">↗</span>
+        <span class="tool-icon">🌱</span>
+        <div class="tool-number">HERRAMIENTA 03</div>
+        <div class="tool-name">Consolidación</div>
+        <div class="tool-desc">Asentamiento total, grado de consolidación y curva asentamiento vs tiempo.</div>
+      </div>
+      <div class="tool-card asent" onclick="showPage('asent')">
+        <span class="tool-arrow">↗</span>
+        <span class="tool-icon">📉</span>
+        <div class="tool-number">HERRAMIENTA 04</div>
+        <div class="tool-name">Asentamientos</div>
+        <div class="tool-desc">Elástico, consolidación primaria y secundaria. Verificación vs límite admisible.</div>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-item"><div class="stat-value">4</div><div class="stat-label">HERRAMIENTAS ACTIVAS</div></div>
+      <div class="stat-item"><div class="stat-value">4</div><div class="stat-label">MÉTODOS DE CÁLCULO</div></div>
+      <div class="stat-item"><div class="stat-value">∞</div><div class="stat-label">CÁLCULOS DISPONIBLES</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SUCS -->
+<div class="page" id="page-sucs">
+  <div class="tool-page">
+    <div class="page-header">
+      <div><div style="font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;">// HERRAMIENTA 01</div><h2 style="color:var(--accent2)">Clasificación<br>SUCS</h2></div>
+      <button class="back-btn" onclick="showPage('home')">← Inicio</button>
+    </div>
+    <div class="divider"></div>
+    <div class="form-grid">
+      <div class="form-section">
+        <div class="section-label">Granulometría</div>
+        <div class="field"><label>% GRAVA (ret. #4)</label><input type="number" id="s-grava" placeholder="0–100" min="0" max="100" step="0.1"></div>
+        <div class="field"><label>% ARENA</label><input type="number" id="s-arena" placeholder="0–100" min="0" max="100" step="0.1"></div>
+        <div class="field"><label>% FINOS (pasa #200)</label><input type="number" id="s-finos" placeholder="0–100" min="0" max="100" step="0.1"></div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Límites Atterberg</div>
+        <div class="field"><label>LÍMITE LÍQUIDO — LL (%)</label><input type="number" id="s-ll" placeholder="ej. 45" min="0" step="0.1"></div>
+        <div class="field"><label>LÍMITE PLÁSTICO — LP (%)</label><input type="number" id="s-lp" placeholder="ej. 22" min="0" step="0.1"></div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Curva Granulométrica</div>
+        <div class="field"><label>D₁₀ (mm)</label><input type="number" id="s-d10" placeholder="ej. 0.08" min="0" step="0.001"></div>
+        <div class="field"><label>D₃₀ (mm)</label><input type="number" id="s-d30" placeholder="ej. 0.35" min="0" step="0.001"></div>
+        <div class="field"><label>D₆₀ (mm)</label><input type="number" id="s-d60" placeholder="ej. 1.20" min="0" step="0.001"></div>
+      </div>
+    </div>
+    <div class="error-box" id="s-error"></div>
+    <button class="btn-calc" onclick="clasificarSUCS()">→ Clasificar Suelo</button>
+    <div class="results-box" id="s-results">
+      <div class="sucs-result">
+        <div class="sucs-strip" id="s-strip"></div>
+        <div class="sucs-header">
+          <div><div class="sucs-name" id="s-name"></div><div class="sucs-desc" id="s-desc"></div></div>
+          <div class="sucs-symbol" id="s-symbol"></div>
+        </div>
+        <div class="sucs-body"><div class="sucs-meta" id="s-meta"></div></div>
+      </div>
+      <button class="btn-reset" onclick="resetSUCS()">← Nuevo cálculo</button>
+    </div>
+  </div>
+</div>
+
+<!-- CARGA -->
+<div class="page" id="page-carga">
+  <div class="tool-page">
+    <div class="page-header">
+      <div><div style="font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;">// HERRAMIENTA 02</div><h2 style="color:var(--accent)">Capacidad<br>de Carga</h2></div>
+      <button class="back-btn" onclick="showPage('home')">← Inicio</button>
+    </div>
+    <div class="divider"></div>
+    <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">// TIPO DE ZAPATA</div>
+    <div class="tipo-grid">
+      <div class="tipo-btn active" onclick="setTipo('corrida')" id="c-btn-corrida"><div class="tipo-icon">▬</div><div class="tipo-name">CORRIDA</div></div>
+      <div class="tipo-btn" onclick="setTipo('cuadrada')" id="c-btn-cuadrada"><div class="tipo-icon">■</div><div class="tipo-name">CUADRADA</div></div>
+      <div class="tipo-btn" onclick="setTipo('circular')" id="c-btn-circular"><div class="tipo-icon">●</div><div class="tipo-name">CIRCULAR</div></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-section">
+        <div class="section-label">Suelo</div>
+        <div class="field"><label>COHESIÓN — c (kPa)</label><input type="number" id="c-c" placeholder="ej. 20" min="0" step="0.1"></div>
+        <div class="field"><label>ÁNGULO FRICCIÓN — φ (°)</label><input type="number" id="c-phi" placeholder="ej. 25" min="0" max="45" step="0.1"></div>
+        <div class="field"><label>PESO UNITARIO — γ (kN/m³)</label><input type="number" id="c-gamma" placeholder="ej. 18" min="0" step="0.1"></div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Cimentación</div>
+        <div class="field"><label>ANCHO — B (m)</label><input type="number" id="c-B" placeholder="ej. 1.5" min="0" step="0.01"></div>
+        <div class="field"><label>LONGITUD — L (m)</label><input type="number" id="c-L" placeholder="ej. 2.0" min="0" step="0.01"></div>
+        <div class="field"><label>PROFUNDIDAD — Df (m)</label><input type="number" id="c-Df" placeholder="ej. 1.2" min="0" step="0.01"></div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Opciones</div>
+        <div class="field"><label>FACTOR DE SEGURIDAD</label><select id="c-fs"><option value="2">FS = 2.0</option><option value="2.5">FS = 2.5</option><option value="3" selected>FS = 3.0</option><option value="4">FS = 4.0</option></select></div>
+        <div class="field"><label>UNIDADES</label><select id="c-uni"><option value="kPa">kPa / kN/m³</option><option value="ton">t/m² / t/m³</option></select></div>
+      </div>
+    </div>
+    <div class="error-box" id="c-error"></div>
+    <button class="btn-calc" onclick="calcCarga()">→ Calcular Capacidad de Carga</button>
+    <div class="results-box" id="c-results">
+      <div class="summary-card">
+        <h3>// Resumen</h3>
+        <div class="summary-grid">
+          <div><div class="summary-label">TIPO</div><div class="summary-value" id="c-sum-tipo">—</div></div>
+          <div><div class="summary-label">c / φ</div><div class="summary-value" id="c-sum-cp">—</div></div>
+          <div><div class="summary-label">B × L</div><div class="summary-value" id="c-sum-bl">—</div></div>
+          <div><div class="summary-label">Df</div><div class="summary-value" id="c-sum-df">—</div></div>
+        </div>
+      </div>
+      <div class="result-grid">
+        <div class="result-card"><div class="result-card-header"><div class="result-method">Terzaghi</div><div class="result-tag">1943</div></div><div class="result-card-body"><div class="result-qu" id="c-qu-terz">—</div><div class="result-unit" id="c-unit-terz">kPa</div><div class="result-qadm"><div class="result-qadm-label">q_adm</div><div class="result-qadm-value" id="c-qadm-terz">—</div></div></div></div>
+        <div class="result-card"><div class="result-card-header"><div class="result-method">Meyerhof</div><div class="result-tag">1963</div></div><div class="result-card-body"><div class="result-qu" id="c-qu-mey">—</div><div class="result-unit" id="c-unit-mey">kPa</div><div class="result-qadm"><div class="result-qadm-label">q_adm</div><div class="result-qadm-value" id="c-qadm-mey">—</div></div></div></div>
+        <div class="result-card"><div class="result-card-header"><div class="result-method">Hansen</div><div class="result-tag">1970</div></div><div class="result-card-body"><div class="result-qu" id="c-qu-han">—</div><div class="result-unit" id="c-unit-han">kPa</div><div class="result-qadm"><div class="result-qadm-label">q_adm</div><div class="result-qadm-value" id="c-qadm-han">—</div></div></div></div>
+        <div class="result-card"><div class="result-card-header"><div class="result-method">Vesic</div><div class="result-tag">1973</div></div><div class="result-card-body"><div class="result-qu" id="c-qu-ves">—</div><div class="result-unit" id="c-unit-ves">kPa</div><div class="result-qadm"><div class="result-qadm-label">q_adm</div><div class="result-qadm-value" id="c-qadm-ves">—</div></div></div></div>
+      </div>
+      <button class="btn-reset" onclick="resetCarga()">← Nuevo cálculo</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONSOLIDACIÓN -->
+<div class="page" id="page-consol">
+  <div class="tool-page">
+    <div class="page-header">
+      <div><div style="font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;">// HERRAMIENTA 03</div><h2 style="color:var(--accent3)">Análisis de<br>Consolidación</h2></div>
+      <button class="back-btn" onclick="showPage('home')">← Inicio</button>
+    </div>
+    <div class="divider"></div>
+    <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">// CONDICIÓN DE DRENAJE</div>
+    <div class="drenaje-grid">
+      <div class="drenaje-btn active" onclick="setDrenaje('doble')" id="d-btn-doble"><div class="d-icon">⇅</div><div class="d-name">DOBLE DRENAJE</div><div class="d-desc">Hdr = H/2</div></div>
+      <div class="drenaje-btn" onclick="setDrenaje('simple')" id="d-btn-simple"><div class="d-icon">↓</div><div class="d-name">SIMPLE DRENAJE</div><div class="d-desc">Hdr = H</div></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-section">
+        <div class="section-label">Suelo</div>
+        <div class="field"><label>ESPESOR — H (m)</label><input type="number" id="d-H" placeholder="ej. 4.0" min="0.01" step="0.01"></div>
+        <div class="field"><label>ÍNDICE COMPRESIÓN — Cc</label><input type="number" id="d-Cc" placeholder="ej. 0.35" min="0" step="0.01"></div>
+        <div class="field"><label>RELACIÓN VACÍOS — e₀</label><input type="number" id="d-e0" placeholder="ej. 0.85" min="0" step="0.01"></div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Esfuerzos</div>
+        <div class="field"><label>ESFUERZO INICIAL — σ'₀ (kPa)</label><input type="number" id="d-s0" placeholder="ej. 80" min="0.1" step="0.1"></div>
+        <div class="field"><label>INCREMENTO — Δσ (kPa)</label><input type="number" id="d-ds" placeholder="ej. 50" min="0.1" step="0.1"></div>
+        <div class="field"><label>COEF. Cv (cm²/s)</label><input type="number" id="d-Cv" placeholder="ej. 0.005" min="0" step="0.0001"></div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Consulta</div>
+        <div class="field"><label>TIEMPO — t (días)</label><input type="number" id="d-t" placeholder="ej. 365" min="0" step="1"></div>
+        <div class="field"><label>UNIDADES</label><select id="d-uni"><option value="cm">cm</option><option value="m">m</option><option value="mm">mm</option></select></div>
+      </div>
+    </div>
+    <div class="error-box" id="d-error"></div>
+    <button class="btn-calc" onclick="calcConsol()">→ Calcular Consolidación</button>
+    <div class="results-box" id="d-results">
+      <div class="main-results">
+        <div class="main-card"><div class="main-card-label">Asentamiento Total</div><div class="main-card-value" id="d-sc">—</div><div class="main-card-unit" id="d-sc-unit">cm</div></div>
+        <div class="main-card"><div class="main-card-label">Grado Consol. al t</div><div class="main-card-value" id="d-u">—</div><div class="main-card-unit">% consolidado</div></div>
+        <div class="main-card"><div class="main-card-label">Asentamiento al t</div><div class="main-card-value" id="d-st">—</div><div class="main-card-unit" id="d-st-unit">cm</div></div>
+      </div>
+      <div class="table-section">
+        <div class="table-header-row">// Evolución del asentamiento</div>
+        <table><thead><tr><th>Tiempo</th><th>Tv</th><th>U (%)</th><th>Asentamiento</th></tr></thead><tbody id="d-tabla"></tbody></table>
+      </div>
+      <div class="chart-section">
+        <div class="chart-title">// Curva asentamiento vs tiempo</div>
+        <canvas id="d-chart" height="280"></canvas>
+      </div>
+      <button class="btn-reset" onclick="resetConsol()">← Nuevo cálculo</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-btn')[['home','sucs','carga','consol','asent'].indexOf(id)].classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function gv(id){const v=parseFloat(document.getElementById(id).value);return isNaN(v)?null:v;}
+function showErr(id,msg){const el=document.getElementById(id);if(msg){el.textContent=msg;el.classList.add('visible');}else el.classList.remove('visible');}
+
+// SUCS
+function clasificarSUCS(){
+  showErr('s-error','');document.getElementById('s-results').classList.remove('visible');
+  const grava=gv('s-grava'),arena=gv('s-arena'),finos=gv('s-finos'),ll=gv('s-ll'),lp=gv('s-lp'),d10=gv('s-d10'),d30=gv('s-d30'),d60=gv('s-d60');
+  if(finos===null){showErr('s-error','Ingresa el % de finos.');return;}
+  let ip=null,cu=null,cc=null;
+  if(ll!==null&&lp!==null)ip=ll-lp;
+  if(d10&&d30&&d60&&d10>0){cu=d60/d10;cc=(d30*d30)/(d60*d10);}
+  let simbolo,nombre,desc,color;
+  if(finos>=50){
+    if(ll===null||lp===null){showErr('s-error','Para suelos finos se requieren LL y LP.');return;}
+    if(ll<50){
+      if(ip>0.73*(ll-20)&&ip>=7){simbolo='CL';nombre='Arcilla de Baja Plasticidad';color='#c8a96e';desc='Arcilla inorgánica de baja plasticidad. Moderadamente compresible.';}
+      else if(ip<4||ip<0.73*(ll-20)){simbolo='ML';nombre='Limo de Baja Plasticidad';color='#a07850';desc='Limo inorgánico de baja plasticidad. Alta capilaridad.';}
+      else{simbolo='CL-ML';nombre='Arcilla-Limo';color='#946848';desc='Zona de transición arcilla-limo.';}
+    }else{
+      if(ip>0.73*(ll-20)){simbolo='CH';nombre='Arcilla de Alta Plasticidad';color='#e07060';desc='Arcilla inorgánica de alta plasticidad. Alta compresibilidad.';}
+      else{simbolo='MH';nombre='Limo de Alta Plasticidad';color='#c06050';desc='Limo inorgánico de alta plasticidad. Muy compresible.';}
+    }
+  }else{
+    const pG=grava!==null?grava:(100-finos-(arena||0));
+    const pA=arena!==null?arena:(100-finos-pG);
+    if(pG>=pA){
+      if(finos<5){simbolo=cu&&cc?(cu>=4&&cc>=1&&cc<=3?'GW':'GP'):'GW/GP';nombre=simbolo==='GW'?'Grava Bien Gradada':'Grava Mal Gradada';color='#6ab8a8';desc=simbolo==='GW'?'Excelente material de cimiento.':'Buena permeabilidad, usada en drenajes.';}
+      else if(finos<=12){simbolo='GM';nombre='Grava con Finos';color='#7ab8a8';desc='Grava con limos. Comportamiento intermedio.';}
+      else{simbolo=ip&&ip>0.73*((ll||0)-20)&&ip>=7?'GC':'GM';nombre=simbolo==='GC'?'Grava Arcillosa':'Grava Limosa';color='#8ab870';desc='Grava con finos cohesivos.';}
+    }else{
+      if(finos<5){simbolo=cu&&cc?(cu>=6&&cc>=1&&cc<=3?'SW':'SP'):'SW/SP';nombre=simbolo==='SW'?'Arena Bien Gradada':'Arena Mal Gradada';color='#a8c840';desc=simbolo==='SW'?'Buena resistencia al corte.':'Alta permeabilidad, susceptible a licuefacción.';}
+      else if(finos<=12){simbolo='SM';nombre='Arena con Finos';color='#b8c850';desc='Arena con finos. Resistencia intermedia.';}
+      else{simbolo=ip&&ip>0.73*((ll||0)-20)&&ip>=7?'SC':'SM';nombre=simbolo==='SC'?'Arena Arcillosa':'Arena Limosa';color='#c0b860';desc='Arena con finos cohesivos.';}
+    }
+  }
+  document.getElementById('s-symbol').textContent=simbolo;
+  document.getElementById('s-symbol').style.color=color;
+  document.getElementById('s-name').textContent=nombre;
+  document.getElementById('s-desc').textContent=desc;
+  document.getElementById('s-strip').style.background=color;
+  let meta=`<div class="meta-item"><div class="meta-label">Símbolo</div><div class="meta-value" style="color:${color}">${simbolo}</div></div>`;
+  if(finos!==null)meta+=`<div class="meta-item"><div class="meta-label">% Finos</div><div class="meta-value">${finos.toFixed(1)}%</div></div>`;
+  if(ip!==null)meta+=`<div class="meta-item"><div class="meta-label">IP</div><div class="meta-value">${ip.toFixed(1)}%</div></div>`;
+  if(cu!==null)meta+=`<div class="meta-item"><div class="meta-label">Cu</div><div class="meta-value">${cu.toFixed(2)}</div></div>`;
+  if(cc!==null)meta+=`<div class="meta-item"><div class="meta-label">Cc</div><div class="meta-value">${cc.toFixed(2)}</div></div>`;
+  document.getElementById('s-meta').innerHTML=meta;
+  document.getElementById('s-results').classList.add('visible');
+}
+function resetSUCS(){['s-grava','s-arena','s-finos','s-ll','s-lp','s-d10','s-d30','s-d60'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('s-results').classList.remove('visible');}
+
+// CARGA
+let tipoZapata='corrida';
+function setTipo(t){tipoZapata=t;['corrida','cuadrada','circular'].forEach(x=>document.getElementById('c-btn-'+x).classList.remove('active'));document.getElementById('c-btn-'+t).classList.add('active');const L=document.getElementById('c-L');L.disabled=t!=='corrida';if(t!=='corrida')L.value='';}
+function g2r(d){return d*Math.PI/180;}
+function Nq(p){const r=g2r(p);return Math.exp(Math.PI*Math.tan(r))*Math.pow(Math.tan(Math.PI/4+r/2),2);}
+function Nc(p){return p===0?5.14:(Nq(p)-1)/Math.tan(g2r(p));}
+function Ng(p,m){const r=g2r(p);if(m==='t')return 2*(Nq(p)+1)*Math.tan(r);if(m==='m')return(Nq(p)-1)*Math.tan(1.4*r);if(m==='h')return 1.5*(Nq(p)-1)*Math.tan(r);return 2*(Nq(p)+1)*Math.tan(r);}
+function cT(c,p,g,B,L,D){const q=g*D;let sc=1,sq=1,sg=1;if(tipoZapata==='cuadrada'){sc=1.3;sg=0.8;}if(tipoZapata==='circular'){sc=1.3;sg=0.6;}return c*Nc(p)*sc+q*Nq(p)*sq+0.5*g*B*Ng(p,'t')*sg;}
+function cM(c,p,g,B,L,D){const r=g2r(p),q=g*D,rt=tipoZapata==='corrida'?0:1,Kp=Math.pow(Math.tan(Math.PI/4+r/2),2);const sc=1+0.2*rt*Kp,sq=p>10?1+0.1*rt*Kp:1,sg=p>10?sq:1;const k=D/B,dc=p>10?1+0.2*Math.sqrt(Nq(p)/Nc(p))*k:1+0.2*k,dq=p>10?1+0.1*Math.sqrt(Nq(p)/Nc(p))*k:1,dg=dq;return c*Nc(p)*sc*dc+q*Nq(p)*sq*dq+0.5*g*B*Ng(p,'m')*sg*dg;}
+function cH(c,p,g,B,L,D){const r=g2r(p),q=g*D,rt=tipoZapata==='corrida'?0:1;const sc=p===0?1+0.2*rt:1+rt*(Nq(p)/Nc(p)),sq=1+rt*Math.tan(r),sg=tipoZapata==='corrida'?1:Math.max(1-0.4*rt,0.6);const k=D<=B?D/B:Math.atan(D/B),dc=1+0.4*k,dq=1+2*Math.tan(r)*Math.pow(1-Math.sin(r),2)*k;return c*Nc(p)*sc*dc+q*Nq(p)*sq*dq+0.5*g*B*Ng(p,'h')*sg;}
+function cV(c,p,g,B,L,D){const r=g2r(p),q=g*D,rt=tipoZapata==='corrida'?0:1;const sc=p===0?1+0.2*rt:1+rt*(Nq(p)/Nc(p)),sq=1+rt*Math.tan(r),sg=tipoZapata==='corrida'?1:Math.max(1-0.4*rt,0.6);const k=D<=B?D/B:Math.atan(D/B),dq=1+2*Math.tan(r)*Math.pow(1-Math.sin(r),2)*k,dc=1+(1-Math.sin(r))/(Nc(p)*Math.tan(r||0.001))*k*2;return c*Nc(p)*sc*dc+q*Nq(p)*sq*dq+0.5*g*B*Ng(p,'v')*sg;}
+function fC(v,u){return u==='ton'?(v*0.101972).toFixed(2):v.toFixed(2);}
+function calcCarga(){
+  showErr('c-error','');document.getElementById('c-results').classList.remove('visible');
+  const c=gv('c-c')??0,phi=gv('c-phi'),gamma=gv('c-gamma'),B=gv('c-B'),Df=gv('c-Df'),fs=parseFloat(document.getElementById('c-fs').value),uni=document.getElementById('c-uni').value;
+  let L=gv('c-L');if(tipoZapata!=='corrida')L=B;
+  if(phi===null){showErr('c-error','Ingresa φ.');return;}if(!gamma){showErr('c-error','Ingresa γ.');return;}if(!B){showErr('c-error','Ingresa B.');return;}if(!Df){showErr('c-error','Ingresa Df.');return;}if(tipoZapata==='corrida'&&L===null){showErr('c-error','Ingresa L.');return;}
+  const ul=uni==='kPa'?'kPa':'t/m²';
+  [['terz',cT],['mey',cM],['han',cH],['ves',cV]].forEach(([id,fn])=>{const qu=fn(c,phi,gamma,B,L||B,Df),qa=qu/fs;document.getElementById('c-qu-'+id).textContent=fC(qu,uni);document.getElementById('c-unit-'+id).textContent='q_ult ('+ul+')';document.getElementById('c-qadm-'+id).textContent=fC(qa,uni)+' '+ul;});
+  document.getElementById('c-sum-tipo').textContent=tipoZapata.toUpperCase();document.getElementById('c-sum-cp').textContent=c+' / '+phi+'°';document.getElementById('c-sum-bl').textContent=tipoZapata==='corrida'?B+'×'+L:B+'×'+B;document.getElementById('c-sum-df').textContent=Df+' m';
+  document.getElementById('c-results').classList.add('visible');
+}
+function resetCarga(){['c-c','c-phi','c-gamma','c-B','c-L','c-Df'].forEach(id=>{const e=document.getElementById(id);if(e&&!e.disabled)e.value='';});document.getElementById('c-results').classList.remove('visible');}
+
+// CONSOLIDACIÓN
+let drenaje='doble',chartInst=null;
+function setDrenaje(d){drenaje=d;['doble','simple'].forEach(x=>document.getElementById('d-btn-'+x).classList.remove('active'));document.getElementById('d-btn-'+d).classList.add('active');}
+function calcU(Tv){if(Tv<=0)return 0;if(Tv<0.217)return Math.sqrt(4*Tv/Math.PI)*100;return(1-Math.exp(-1.7812*Tv-0.2316*Tv*Tv+0.0139*Tv*Tv*Tv))*100;}
+function fS(v,u){if(u==='m')return(v/100).toFixed(3);if(u==='mm')return(v*10).toFixed(1);return v.toFixed(2);}
+function calcConsol(){
+  showErr('d-error','');document.getElementById('d-results').classList.remove('visible');
+  const H=gv('d-H'),Cc=gv('d-Cc'),e0=gv('d-e0'),s0=gv('d-s0'),ds=gv('d-ds'),Cv=gv('d-Cv'),t=gv('d-t'),uni=document.getElementById('d-uni').value;
+  if(!H){showErr('d-error','Ingresa H.');return;}if(!Cc){showErr('d-error','Ingresa Cc.');return;}if(!e0){showErr('d-error','Ingresa e₀.');return;}if(!s0){showErr('d-error','Ingresa σ\'₀.');return;}if(!ds){showErr('d-error','Ingresa Δσ.');return;}if(!Cv){showErr('d-error','Ingresa Cv.');return;}if(!t){showErr('d-error','Ingresa t.');return;}
+  const Hdr=drenaje==='doble'?H/2:H,Hcm=Hdr*100,Sc=(Cc*H*100)/(1+e0)*Math.log10((s0+ds)/s0),Tv=(Cv*t*86400)/(Hcm*Hcm),U=Math.min(calcU(Tv),100),St=(U/100)*Sc;
+  document.getElementById('d-sc').textContent=fS(Sc,uni);document.getElementById('d-sc-unit').textContent=uni;document.getElementById('d-u').textContent=U.toFixed(1)+'%';document.getElementById('d-st').textContent=fS(St,uni);document.getElementById('d-st-unit').textContent=uni;
+  const tiempos=[1,7,30,90,180,365,730,1825,3650];
+  document.getElementById('d-tabla').innerHTML=tiempos.map(tx=>{const ts=tx*86400,tv=(Cv*ts)/(Hcm*Hcm),u=Math.min(calcU(tv),100),st=(u/100)*Sc,lbl=tx>=365?(tx/365).toFixed(1)+' años':tx+' días';return`<tr><td>${lbl}</td><td>${tv.toFixed(4)}</td><td class="td-u">${u.toFixed(1)}%</td><td class="td-sc">${fS(st,uni)} ${uni}</td></tr>`;}).join('');
+  const tMax=Math.max(t*2,3650),pts=60,labels=[],data=[];
+  for(let i=0;i<=pts;i++){const ti=(tMax/pts)*i,tvi=(Cv*ti*86400)/(Hcm*Hcm),ui=Math.min(calcU(tvi),100),sti=(ui/100)*Sc;labels.push(ti<365?ti.toFixed(0)+'d':(ti/365).toFixed(1)+'a');data.push(parseFloat(fS(sti,uni)));}
+  const ctx=document.getElementById('d-chart').getContext('2d');
+  if(chartInst)chartInst.destroy();
+  chartInst=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Asentamiento ('+uni+')',data,borderColor:'#6ab8a8',backgroundColor:'rgba(106,184,168,0.08)',borderWidth:2.5,pointRadius:0,fill:true,tension:0.4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{family:'DM Mono',size:10},color:'#6a7058',maxTicksLimit:10},grid:{color:'rgba(42,46,32,0.8)'}},y:{reverse:true,title:{display:true,text:'Asentamiento ('+uni+')',font:{family:'DM Mono',size:11},color:'#6a7058'},ticks:{font:{family:'DM Mono',size:10},color:'#6a7058'},grid:{color:'rgba(42,46,32,0.8)'}}}}}});
+  document.getElementById('d-results').classList.add('visible');
+}
+function resetConsol(){['d-H','d-Cc','d-e0','d-s0','d-ds','d-Cv','d-t'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('d-results').classList.remove('visible');if(chartInst){chartInst.destroy();chartInst=null;}}
+</script>
+<!-- ASENTAMIENTOS -->
+<div class="page" id="page-asent">
+  <div class="tool-page">
+    <div class="page-header">
+      <div><div style="font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;">// HERRAMIENTA 04</div><h2 style="color:#d87a6a">Análisis de<br>Asentamientos</h2></div>
+      <button class="back-btn" onclick="showPage('home')">← Inicio</button>
+    </div>
+    <div class="divider"></div>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:4px;margin-bottom:20px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:6px;">
+      <button class="nav-btn active" id="atab-btn-elastico" onclick="showATab('elastico')" style="flex:1;text-align:center;">① Elástico</button>
+      <button class="nav-btn" id="atab-btn-primaria" onclick="showATab('primaria')" style="flex:1;text-align:center;">② Primaria</button>
+      <button class="nav-btn" id="atab-btn-secundaria" onclick="showATab('secundaria')" style="flex:1;text-align:center;">③ Secundaria</button>
+      <button class="nav-btn" id="atab-btn-total" onclick="showATab('total')" style="flex:1;text-align:center;">Σ Total</button>
+    </div>
+
+    <!-- ELÁSTICO -->
+    <div id="atab-elastico" style="animation:fadeIn 0.4s ease both;">
+      <div style="background:rgba(168,200,64,0.05);border:1px solid rgba(168,200,64,0.15);border-radius:4px;padding:14px 18px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.7;"><strong style="color:var(--accent)">Asentamiento Elástico</strong> — Se = q·B·(1-μ²)/Es · If (factor de forma de Bowles)</div>
+      <div class="form-grid">
+        <div class="form-section">
+          <div class="section-label">Carga y Geometría</div>
+          <div class="field"><label>PRESIÓN NETA — q (kPa)</label><input type="number" id="ae-q" placeholder="ej. 150" min="0" step="0.1"></div>
+          <div class="field"><label>ANCHO — B (m)</label><input type="number" id="ae-B" placeholder="ej. 2.0" min="0" step="0.01"></div>
+          <div class="field"><label>LONGITUD — L (m)</label><input type="number" id="ae-L" placeholder="ej. 3.0" min="0" step="0.01"></div>
+        </div>
+        <div class="form-section">
+          <div class="section-label">Suelo</div>
+          <div class="field"><label>MÓDULO ELÁSTICO — Es (kPa)</label><input type="number" id="ae-Es" placeholder="ej. 15000" min="0" step="100"></div>
+          <div class="field"><label>RELACIÓN DE POISSON — μ</label><input type="number" id="ae-mu" placeholder="ej. 0.35" min="0" max="0.5" step="0.01"></div>
+        </div>
+        <div class="form-section">
+          <div class="section-label">Opciones</div>
+          <div class="field"><label>TIPO</label><select id="ae-tipo"><option value="flexible">Flexible</option><option value="rigida">Rígida</option></select></div>
+          <div class="field"><label>UNIDADES</label><select id="ae-uni"><option value="cm">cm</option><option value="mm">mm</option><option value="m">m</option></select></div>
+        </div>
+      </div>
+      <div class="error-box" id="ae-error"></div>
+      <button class="btn-calc" onclick="calcAElastico()">→ Calcular Asentamiento Elástico</button>
+      <div class="results-box" id="ae-results">
+        <div class="main-results">
+          <div class="main-card"><div class="main-card-label">Asentamiento Elástico</div><div class="main-card-value" id="ae-se" style="color:#d87a6a">—</div><div class="main-card-unit" id="ae-se-unit">cm</div></div>
+          <div class="main-card"><div class="main-card-label">Factor de Forma If</div><div class="main-card-value" id="ae-if" style="color:var(--accent2)">—</div><div class="main-card-unit">adimensional</div></div>
+          <div class="main-card"><div class="main-card-label">Relación L/B</div><div class="main-card-value" id="ae-lb" style="color:var(--accent3)">—</div><div class="main-card-unit">adimensional</div></div>
+        </div>
+        <button class="btn-reset" onclick="resetAElastico()">← Nuevo cálculo</button>
+      </div>
+    </div>
+
+    <!-- PRIMARIA -->
+    <div id="atab-primaria" style="display:none;animation:fadeIn 0.4s ease both;">
+      <div style="background:rgba(168,200,64,0.05);border:1px solid rgba(168,200,64,0.15);border-radius:4px;padding:14px 18px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.7;"><strong style="color:var(--accent)">Consolidación Primaria</strong> — Sc = Cc·H/(1+e₀)·log(σ'f/σ'₀) para NC. Usa Cs para la parte OC.</div>
+      <div class="form-grid">
+        <div class="form-section">
+          <div class="section-label">Suelo</div>
+          <div class="field"><label>ESPESOR — H (m)</label><input type="number" id="ap-H" placeholder="ej. 4.0" min="0" step="0.01"></div>
+          <div class="field"><label>ÍNDICE COMPRESIÓN — Cc</label><input type="number" id="ap-Cc" placeholder="ej. 0.35" min="0" step="0.01"></div>
+          <div class="field"><label>ÍNDICE RECOMPRESIÓN — Cs</label><input type="number" id="ap-Cs" placeholder="ej. 0.07" min="0" step="0.001"></div>
+          <div class="field"><label>RELACIÓN VACÍOS — e₀</label><input type="number" id="ap-e0" placeholder="ej. 0.85" min="0" step="0.01"></div>
+        </div>
+        <div class="form-section">
+          <div class="section-label">Esfuerzos</div>
+          <div class="field"><label>ESFUERZO EFECTIVO — σ'₀ (kPa)</label><input type="number" id="ap-s0" placeholder="ej. 80" min="0" step="0.1"></div>
+          <div class="field"><label>ESFUERZO PRECONS. — σ'c (kPa)</label><input type="number" id="ap-sc" placeholder="ej. 80 si NC" min="0" step="0.1"></div>
+          <div class="field"><label>INCREMENTO — Δσ (kPa)</label><input type="number" id="ap-ds" placeholder="ej. 50" min="0" step="0.1"></div>
+        </div>
+        <div class="form-section">
+          <div class="section-label">Opciones</div>
+          <div class="field"><label>UNIDADES</label><select id="ap-uni"><option value="cm">cm</option><option value="mm">mm</option><option value="m">m</option></select></div>
+          <div class="field" style="margin-top:8px;"><div style="font-size:11px;color:var(--muted);line-height:1.7;">Si σ'c = σ'₀ → NC<br>Si σ'c > σ'₀ → OC</div></div>
+        </div>
+      </div>
+      <div class="error-box" id="ap-error"></div>
+      <button class="btn-calc" onclick="calcAPrimaria()">→ Calcular Consolidación Primaria</button>
+      <div class="results-box" id="ap-results">
+        <div class="main-results">
+          <div class="main-card"><div class="main-card-label">Asentamiento Total</div><div class="main-card-value" id="ap-sc-val" style="color:#d87a6a">—</div><div class="main-card-unit" id="ap-sc-unit">cm</div></div>
+          <div class="main-card"><div class="main-card-label">Condición del Suelo</div><div class="main-card-value" id="ap-cond" style="color:var(--accent2);font-size:1.3rem">—</div><div class="main-card-unit">NC o OC</div></div>
+          <div class="main-card"><div class="main-card-label">OCR</div><div class="main-card-value" id="ap-ocr" style="color:var(--accent3)">—</div><div class="main-card-unit">adimensional</div></div>
+        </div>
+        <button class="btn-reset" onclick="resetAPrimaria()">← Nuevo cálculo</button>
+      </div>
+    </div>
+
+    <!-- SECUNDARIA -->
+    <div id="atab-secundaria" style="display:none;animation:fadeIn 0.4s ease both;">
+      <div style="background:rgba(168,200,64,0.05);border:1px solid rgba(168,200,64,0.15);border-radius:4px;padding:14px 18px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.7;"><strong style="color:var(--accent)">Consolidación Secundaria</strong> — Ss = Cα·H/(1+ep)·log(t₂/t₁)</div>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="form-section">
+          <div class="section-label">Suelo</div>
+          <div class="field"><label>ESPESOR — H (m)</label><input type="number" id="as-H" placeholder="ej. 4.0" min="0" step="0.01"></div>
+          <div class="field"><label>ÍNDICE COMP. SECUNDARIA — Cα</label><input type="number" id="as-Ca" placeholder="ej. 0.02" min="0" step="0.001"></div>
+          <div class="field"><label>RELACIÓN VACÍOS FINAL — ep</label><input type="number" id="as-ep" placeholder="ej. 0.70" min="0" step="0.01"></div>
+        </div>
+        <div class="form-section">
+          <div class="section-label">Tiempos</div>
+          <div class="field"><label>TIEMPO INICIO — t₁ (días)</label><input type="number" id="as-t1" placeholder="ej. 365" min="0" step="1"></div>
+          <div class="field"><label>TIEMPO FINAL — t₂ (días)</label><input type="number" id="as-t2" placeholder="ej. 3650" min="0" step="1"></div>
+          <div class="field"><label>UNIDADES</label><select id="as-uni"><option value="cm">cm</option><option value="mm">mm</option><option value="m">m</option></select></div>
+        </div>
+      </div>
+      <div class="error-box" id="as-error"></div>
+      <button class="btn-calc" onclick="calcASecundaria()">→ Calcular Consolidación Secundaria</button>
+      <div class="results-box" id="as-results">
+        <div class="main-results">
+          <div class="main-card"><div class="main-card-label">Asentamiento Secundario</div><div class="main-card-value" id="as-ss" style="color:#d87a6a">—</div><div class="main-card-unit" id="as-ss-unit">cm</div></div>
+          <div class="main-card"><div class="main-card-label">t₂ / t₁</div><div class="main-card-value" id="as-ratio" style="color:var(--accent2)">—</div><div class="main-card-unit">relación tiempos</div></div>
+          <div class="main-card"><div class="main-card-label">Tasa por año</div><div class="main-card-value" id="as-rate" style="color:var(--accent3)">—</div><div class="main-card-unit" id="as-rate-unit">cm/año</div></div>
+        </div>
+        <div class="chart-section"><div class="chart-title">// Curva asentamiento secundario vs tiempo</div><canvas id="as-chart" height="260"></canvas></div>
+        <button class="btn-reset" onclick="resetASecundaria()">← Nuevo cálculo</button>
+      </div>
+    </div>
+
+    <!-- TOTAL -->
+    <div id="atab-total" style="display:none;animation:fadeIn 0.4s ease both;">
+      <div style="background:rgba(168,200,64,0.05);border:1px solid rgba(168,200,64,0.15);border-radius:4px;padding:14px 18px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.7;"><strong style="color:var(--accent)">Asentamiento Total</strong> — S_total = Se + Sc + Ss</div>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="form-section">
+          <div class="section-label">Componentes (cm)</div>
+          <div class="field"><label>ASENTAMIENTO ELÁSTICO — Se (cm)</label><input type="number" id="at-se" placeholder="ej. 1.20" min="0" step="0.01"></div>
+          <div class="field"><label>CONSOLIDACIÓN PRIMARIA — Sc (cm)</label><input type="number" id="at-sc" placeholder="ej. 15.96" min="0" step="0.01"></div>
+          <div class="field"><label>CONSOLIDACIÓN SECUNDARIA — Ss (cm)</label><input type="number" id="at-ss" placeholder="ej. 2.50" min="0" step="0.01"></div>
+        </div>
+        <div class="form-section">
+          <div class="section-label">Verificación</div>
+          <div class="field"><label>LÍMITE ADMISIBLE (cm)</label><input type="number" id="at-lim" placeholder="ej. 2.54 (1 pulg)" min="0" step="0.01"></div>
+          <div class="field"><label>UNIDADES</label><select id="at-uni"><option value="cm">cm</option><option value="mm">mm</option><option value="m">m</option></select></div>
+        </div>
+      </div>
+      <div class="error-box" id="at-error"></div>
+      <button class="btn-calc" onclick="calcATotal()">→ Calcular Asentamiento Total</button>
+      <div class="results-box" id="at-results">
+        <div class="summary-card">
+          <h3>// Asentamiento Total</h3>
+          <div class="summary-grid">
+            <div><div class="summary-label">Se</div><div class="summary-value" id="at-b-se">—</div></div>
+            <div><div class="summary-label">Sc</div><div class="summary-value" id="at-b-sc">—</div></div>
+            <div><div class="summary-label">Ss</div><div class="summary-value" id="at-b-ss">—</div></div>
+            <div><div class="summary-label">S_TOTAL</div><div class="summary-value" id="at-total" style="color:#d87a6a;font-size:1.3rem">—</div></div>
+          </div>
+        </div>
+        <div id="at-verif-box" style="display:none;" class="summary-card"><div id="at-verif"></div></div>
+        <button class="btn-reset" onclick="resetATotal()">← Nuevo cálculo</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+// ── ASENTAMIENTOS ──
+function showATab(id) {
+  ['elastico','primaria','secundaria','total'].forEach(t=>{
+    document.getElementById('atab-'+t).style.display='none';
+    document.getElementById('atab-btn-'+t).classList.remove('active');
+  });
+  document.getElementById('atab-'+id).style.display='block';
+  document.getElementById('atab-btn-'+id).classList.add('active');
+}
+
+function gav(id){const v=parseFloat(document.getElementById(id).value);return isNaN(v)?null:v;}
+function fmtA(v,u){if(u==='mm')return(v*10).toFixed(1);if(u==='m')return(v/100).toFixed(3);return v.toFixed(2);}
+function showAErr(id,msg){const el=document.getElementById(id);if(msg){el.textContent=msg;el.classList.add('visible');}else el.classList.remove('visible');}
+
+function calcAElastico(){
+  showAErr('ae-error','');document.getElementById('ae-results').classList.remove('visible');
+  const q=gav('ae-q'),B=gav('ae-B'),L=gav('ae-L'),Es=gav('ae-Es'),mu=gav('ae-mu');
+  const tipo=document.getElementById('ae-tipo').value,uni=document.getElementById('ae-uni').value;
+  if(!q){showAErr('ae-error','Ingresa q.');return;}
+  if(!B){showAErr('ae-error','Ingresa B.');return;}
+  if(!L){showAErr('ae-error','Ingresa L.');return;}
+  if(!Es){showAErr('ae-error','Ingresa Es.');return;}
+  if(mu===null){showAErr('ae-error','Ingresa μ.');return;}
+  const LB=L/B;
+  let If;
+  if(LB<=1)If=0.82;else if(LB<=2)If=0.82+(LB-1)*0.24;else if(LB<=3)If=1.06+(LB-2)*0.14;else if(LB<=5)If=1.20+(LB-3)*0.055;else If=1.50;
+  if(tipo==='rigida')If*=0.8;
+  const Se_cm=(q*B*(1-mu*mu)/Es)*If*100;
+  document.getElementById('ae-se').textContent=fmtA(Se_cm,uni);
+  document.getElementById('ae-se-unit').textContent=uni;
+  document.getElementById('ae-if').textContent=If.toFixed(3);
+  document.getElementById('ae-lb').textContent=LB.toFixed(2);
+  document.getElementById('ae-results').classList.add('visible');
+  document.getElementById('at-se').value=Se_cm.toFixed(2);
+}
+function resetAElastico(){['ae-q','ae-B','ae-L','ae-Es','ae-mu'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('ae-results').classList.remove('visible');}
+
+function calcAPrimaria(){
+  showAErr('ap-error','');document.getElementById('ap-results').classList.remove('visible');
+  const H=gav('ap-H'),Cc=gav('ap-Cc'),Cs=gav('ap-Cs'),e0=gav('ap-e0'),s0=gav('ap-s0'),sc=gav('ap-sc'),ds=gav('ap-ds');
+  const uni=document.getElementById('ap-uni').value;
+  if(!H||!Cc||!e0||!s0||sc===null||!ds){showAErr('ap-error','Completa todos los campos.');return;}
+  const OCR=sc/s0,sf=s0+ds;
+  let Sc_cm,cond;
+  if(OCR<=1.01){cond='NC';Sc_cm=(Cc*H*100)/(1+e0)*Math.log10(sf/s0);}
+  else if(sf<=sc){cond='OC';Sc_cm=(Cs*H*100)/(1+e0)*Math.log10(sf/s0);}
+  else{cond='OC→NC';Sc_cm=(Cs*H*100)/(1+e0)*Math.log10(sc/s0)+(Cc*H*100)/(1+e0)*Math.log10(sf/sc);}
+  document.getElementById('ap-sc-val').textContent=fmtA(Sc_cm,uni);
+  document.getElementById('ap-sc-unit').textContent=uni;
+  document.getElementById('ap-cond').textContent=cond;
+  document.getElementById('ap-ocr').textContent=OCR.toFixed(2);
+  document.getElementById('ap-results').classList.add('visible');
+  document.getElementById('at-sc').value=Sc_cm.toFixed(2);
+}
+function resetAPrimaria(){['ap-H','ap-Cc','ap-Cs','ap-e0','ap-s0','ap-sc','ap-ds'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('ap-results').classList.remove('visible');}
+
+let asChart=null;
+function calcASecundaria(){
+  showAErr('as-error','');document.getElementById('as-results').classList.remove('visible');
+  const H=gav('as-H'),Ca=gav('as-Ca'),ep=gav('as-ep'),t1=gav('as-t1'),t2=gav('as-t2');
+  const uni=document.getElementById('as-uni').value;
+  if(!H||Ca===null||ep===null||!t1||!t2||t2<=t1){showAErr('as-error','Completa todos los campos. t₂ debe ser mayor que t₁.');return;}
+  const Ss_cm=(Ca*H*100)/(1+ep)*Math.log10(t2/t1);
+  const durAnios=(t2-t1)/365,rate=durAnios>0?Ss_cm/durAnios:0;
+  document.getElementById('as-ss').textContent=fmtA(Ss_cm,uni);
+  document.getElementById('as-ss-unit').textContent=uni;
+  document.getElementById('as-ratio').textContent=(t2/t1).toFixed(2);
+  document.getElementById('as-rate').textContent=fmtA(rate,uni);
+  document.getElementById('as-rate-unit').textContent=uni+'/año';
+  const pts=50,labels=[],data=[];
+  for(let i=0;i<=pts;i++){const ti=t1+(t2-t1)/pts*i,ss=(Ca*H*100)/(1+ep)*Math.log10(ti/t1);labels.push(ti>=365?(ti/365).toFixed(1)+'a':ti.toFixed(0)+'d');data.push(parseFloat(fmtA(Math.max(ss,0),uni)));}
+  const ctx=document.getElementById('as-chart').getContext('2d');
+  if(asChart)asChart.destroy();
+  asChart=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Ss ('+uni+')',data,borderColor:'#d87a6a',backgroundColor:'rgba(216,122,106,0.08)',borderWidth:2.5,pointRadius:0,fill:true,tension:0.3}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{family:'DM Mono',size:10},color:'#6a7058',maxTicksLimit:10},grid:{color:'rgba(42,46,32,0.8)'}},y:{reverse:true,title:{display:true,text:'Ss ('+uni+')',font:{family:'DM Mono',size:11},color:'#6a7058'},ticks:{font:{family:'DM Mono',size:10},color:'#6a7058'},grid:{color:'rgba(42,46,32,0.8)'}}}}}}); 
+  document.getElementById('as-results').classList.add('visible');
+  document.getElementById('at-ss').value=Ss_cm.toFixed(2);
+}
+function resetASecundaria(){['as-H','as-Ca','as-ep','as-t1','as-t2'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('as-results').classList.remove('visible');if(asChart){asChart.destroy();asChart=null;}}
+
+function fmtAt(v,u){if(u==='mm')return(v*10).toFixed(1);if(u==='m')return(v/100).toFixed(3);return v.toFixed(2);}
+function calcATotal(){
+  showAErr('at-error','');document.getElementById('at-results').classList.remove('visible');
+  const se=gav('at-se')??0,sc=gav('at-sc')??0,ss=gav('at-ss')??0,lim=gav('at-lim');
+  const uni=document.getElementById('at-uni').value;
+  if(se===0&&sc===0&&ss===0){showAErr('at-error','Ingresa al menos un componente.');return;}
+  const total=se+sc+ss;
+  document.getElementById('at-b-se').textContent=fmtAt(se,uni)+' '+uni;
+  document.getElementById('at-b-sc').textContent=fmtAt(sc,uni)+' '+uni;
+  document.getElementById('at-b-ss').textContent=fmtAt(ss,uni)+' '+uni;
+  document.getElementById('at-total').textContent=fmtAt(total,uni)+' '+uni;
+  if(lim!==null){
+    const ok=total<=lim,pct=(total/lim*100).toFixed(1);
+    document.getElementById('at-verif').innerHTML=`<div style="font-size:1.4rem;font-family:'Fraunces',serif;font-weight:900;color:${ok?'#6ab8a8':'#e07060'}">${ok?'✓ CUMPLE':'✗ EXCEDE'}</div><div style="font-size:12px;color:var(--muted);margin-top:6px;">S_total = ${fmtAt(total,uni)} ${uni} | Límite = ${fmtAt(lim,uni)} ${uni} | Uso: ${pct}%</div>`;
+    document.getElementById('at-verif-box').style.display='block';
+  } else {
+    document.getElementById('at-verif-box').style.display='none';
+  }
+  document.getElementById('at-results').classList.add('visible');
+}
+function resetATotal(){['at-se','at-sc','at-ss','at-lim'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('at-results').classList.remove('visible');}
+</script>
+</body>
+</html>
