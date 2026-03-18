@@ -291,8 +291,8 @@ tr:hover td { background: var(--surface2); }
       <div class="form-section">
         <div class="section-label">Suelo</div>
         <div class="field"><label>COHESIÓN — c (kPa)</label><input type="number" id="c-c" placeholder="ej. 20" min="0" step="0.1"></div>
-        <div class="field"><label>ÁNGULO FRICCIÓN — φ (°)</label><input type="number" id="c-phi" placeholder="ej. 25" min="0" max="45" step="0.1"></div>
-        <div class="field"><label>PESO UNITARIO — γ (kN/m³)</label><input type="number" id="c-gamma" placeholder="ej. 18" min="0" step="0.1"></div>
+        <div class="field"><label>ÁNGULO FRICCIÓN — phi (°)</label><input type="number" id="c-phi" placeholder="ej. 25" min="0" max="45" step="0.1"></div>
+        <div class="field"><label>PESO UNITARIO — gamma (kN/m³)</label><input type="number" id="c-gamma" placeholder="ej. 18" min="0" step="0.1"></div>
       </div>
       <div class="form-section">
         <div class="section-label">Cimentación</div>
@@ -313,7 +313,7 @@ tr:hover td { background: var(--surface2); }
         <h3>// Resumen</h3>
         <div class="summary-grid">
           <div><div class="summary-label">TIPO</div><div class="summary-value" id="c-sum-tipo">—</div></div>
-          <div><div class="summary-label">c / φ</div><div class="summary-value" id="c-sum-cp">—</div></div>
+          <div><div class="summary-label">c / phi</div><div class="summary-value" id="c-sum-cp">—</div></div>
           <div><div class="summary-label">B × L</div><div class="summary-value" id="c-sum-bl">—</div></div>
           <div><div class="summary-label">Df</div><div class="summary-value" id="c-sum-df">—</div></div>
         </div>
@@ -351,13 +351,13 @@ tr:hover td { background: var(--surface2); }
       </div>
       <div class="form-section">
         <div class="section-label">Esfuerzos</div>
-        <div class="field"><label>ESFUERZO INICIAL — σ'₀ (kPa)</label><input type="number" id="d-s0" placeholder="ej. 80" min="0.1" step="0.1"></div>
-        <div class="field"><label>INCREMENTO — Δσ (kPa)</label><input type="number" id="d-ds" placeholder="ej. 50" min="0.1" step="0.1"></div>
+        <div class="field"><label>ESFUERZO INICIAL — sigma0 (kPa)</label><input type="number" id="d-s0" placeholder="ej. 80" min="0.1" step="0.1"></div>
+        <div class="field"><label>INCREMENTO — Delta-sigma (kPa)</label><input type="number" id="d-ds" placeholder="ej. 50" min="0.1" step="0.1"></div>
         <div class="field"><label>COEF. Cv (cm²/s)</label><input type="number" id="d-Cv" placeholder="ej. 0.005" min="0" step="0.0001"></div>
       </div>
       <div class="form-section">
         <div class="section-label">Consulta</div>
-        <div class="field"><label>TIEMPO — t (días)</label><input type="number" id="d-t" placeholder="ej. 365" min="0" step="1"></div>
+        <div class="field"><label>TIEMPO — t (dias)</label><input type="number" id="d-t" placeholder="ej. 365" min="0" step="1"></div>
         <div class="field"><label>UNIDADES</label><select id="d-uni"><option value="cm">cm</option><option value="m">m</option><option value="mm">mm</option></select></div>
       </div>
     </div>
@@ -400,7 +400,7 @@ tr:hover td { background: var(--surface2); }
 
     <!-- ELÁSTICO -->
     <div id="atab-elastico" style="animation:fadeIn 0.4s ease both;">
-      <div style="background:rgba(168,200,64,0.05);border:1px solid rgba(168,200,64,0.15);border-radius:4px;padding:14px 18px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.7;"><strong style="color:var(--accent)">Asentamiento Elástico</strong> — Se = q·B·(1-μ²)/Es · If (factor de forma de Bowles)</div>
+      <div style="background:rgba(168,200,64,0.05);border:1px solid rgba(168,200,64,0.15);border-radius:4px;padding:14px 18px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.7;"><strong style="color:var(--accent)">Asentamiento Elástico</strong> — Se = q·B·(1-mu²)/Es · If (factor de forma de Bowles)</div>
       <div class="form-grid">
         <div class="form-section">
           <div class="section-label">Carga y Geometría</div>
@@ -411,7 +411,7 @@ tr:hover td { background: var(--surface2); }
         <div class="form-section">
           <div class="section-label">Suelo</div>
           <div class="field"><label>MÓDULO ELÁSTICO — Es (kPa)</label><input type="number" id="ae-Es" placeholder="ej. 15000" min="0" step="100"></div>
-          <div class="field"><label>RELACIÓN DE POISSON — μ</label><input type="number" id="ae-mu" placeholder="ej. 0.35" min="0" max="0.5" step="0.01"></div>
+          <div class="field"><label>RELACIÓN DE POISSON — mu</label><input type="number" id="ae-mu" placeholder="ej. 0.35" min="0" max="0.5" step="0.01"></div>
         </div>
         <div class="form-section">
           <div class="section-label">Opciones</div>
@@ -433,7 +433,7 @@ tr:hover td { background: var(--surface2); }
 
     <!-- PRIMARIA -->
     <div id="atab-primaria" style="display:none;animation:fadeIn 0.4s ease both;">
-      <div style="background:rgba(168,200,64,0.05);border:1px solid rgba(168,200,64,0.15);border-radius:4px;padding:14px 18px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.7;"><strong style="color:var(--accent)">Consolidación Primaria</strong> — Sc = Cc·H/(1+e₀)·log(σ'f/σ'₀) para NC. Usa Cs para la parte OC.</div>
+      <div style="background:rgba(168,200,64,0.05);border:1px solid rgba(168,200,64,0.15);border-radius:4px;padding:14px 18px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.7;"><strong style="color:var(--accent)">Consolidación Primaria</strong> — Sc = Cc·H/(1+e₀)·log(sigma'f/sigma0) para NC. Usa Cs para la parte OC.</div>
       <div class="form-grid">
         <div class="form-section">
           <div class="section-label">Suelo</div>
@@ -444,14 +444,14 @@ tr:hover td { background: var(--surface2); }
         </div>
         <div class="form-section">
           <div class="section-label">Esfuerzos</div>
-          <div class="field"><label>ESFUERZO EFECTIVO — σ'₀ (kPa)</label><input type="number" id="ap-s0" placeholder="ej. 80" min="0" step="0.1"></div>
-          <div class="field"><label>ESFUERZO PRECONS. — σ'c (kPa)</label><input type="number" id="ap-sc" placeholder="ej. 80 si NC" min="0" step="0.1"></div>
-          <div class="field"><label>INCREMENTO — Δσ (kPa)</label><input type="number" id="ap-ds" placeholder="ej. 50" min="0" step="0.1"></div>
+          <div class="field"><label>ESFUERZO EFECTIVO — sigma0 (kPa)</label><input type="number" id="ap-s0" placeholder="ej. 80" min="0" step="0.1"></div>
+          <div class="field"><label>ESFUERZO PRECONS. — sigma'c (kPa)</label><input type="number" id="ap-sc" placeholder="ej. 80 si NC" min="0" step="0.1"></div>
+          <div class="field"><label>INCREMENTO — Delta-sigma (kPa)</label><input type="number" id="ap-ds" placeholder="ej. 50" min="0" step="0.1"></div>
         </div>
         <div class="form-section">
           <div class="section-label">Opciones</div>
           <div class="field"><label>UNIDADES</label><select id="ap-uni"><option value="cm">cm</option><option value="mm">mm</option><option value="m">m</option></select></div>
-          <div class="field" style="margin-top:8px;"><div style="font-size:11px;color:var(--muted);line-height:1.7;">Si σ'c = σ'₀ → NC<br>Si σ'c > σ'₀ → OC</div></div>
+          <div class="field" style="margin-top:8px;"><div style="font-size:11px;color:var(--muted);line-height:1.7;">Si sigma'c = sigma0 → NC<br>Si sigma'c > sigma0 → OC</div></div>
         </div>
       </div>
       <div class="error-box" id="ap-error"></div>
@@ -468,18 +468,18 @@ tr:hover td { background: var(--surface2); }
 
     <!-- SECUNDARIA -->
     <div id="atab-secundaria" style="display:none;animation:fadeIn 0.4s ease both;">
-      <div style="background:rgba(168,200,64,0.05);border:1px solid rgba(168,200,64,0.15);border-radius:4px;padding:14px 18px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.7;"><strong style="color:var(--accent)">Consolidación Secundaria</strong> — Ss = Cα·H/(1+ep)·log(t₂/t₁)</div>
+      <div style="background:rgba(168,200,64,0.05);border:1px solid rgba(168,200,64,0.15);border-radius:4px;padding:14px 18px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.7;"><strong style="color:var(--accent)">Consolidación Secundaria</strong> — Ss = Calpha·H/(1+ep)·log(t₂/t₁)</div>
       <div class="form-grid" style="grid-template-columns:1fr 1fr;">
         <div class="form-section">
           <div class="section-label">Suelo</div>
           <div class="field"><label>ESPESOR — H (m)</label><input type="number" id="as-H" placeholder="ej. 4.0" min="0" step="0.01"></div>
-          <div class="field"><label>ÍNDICE COMP. SECUNDARIA — Cα</label><input type="number" id="as-Ca" placeholder="ej. 0.02" min="0" step="0.001"></div>
+          <div class="field"><label>ÍNDICE COMP. SECUNDARIA — Calpha</label><input type="number" id="as-Ca" placeholder="ej. 0.02" min="0" step="0.001"></div>
           <div class="field"><label>RELACIÓN VACÍOS FINAL — ep</label><input type="number" id="as-ep" placeholder="ej. 0.70" min="0" step="0.01"></div>
         </div>
         <div class="form-section">
           <div class="section-label">Tiempos</div>
-          <div class="field"><label>TIEMPO INICIO — t₁ (días)</label><input type="number" id="as-t1" placeholder="ej. 365" min="0" step="1"></div>
-          <div class="field"><label>TIEMPO FINAL — t₂ (días)</label><input type="number" id="as-t2" placeholder="ej. 3650" min="0" step="1"></div>
+          <div class="field"><label>TIEMPO INICIO — t₁ (dias)</label><input type="number" id="as-t1" placeholder="ej. 365" min="0" step="1"></div>
+          <div class="field"><label>TIEMPO FINAL — t₂ (dias)</label><input type="number" id="as-t2" placeholder="ej. 3650" min="0" step="1"></div>
           <div class="field"><label>UNIDADES</label><select id="as-uni"><option value="cm">cm</option><option value="mm">mm</option><option value="m">m</option></select></div>
         </div>
       </div>
@@ -489,7 +489,7 @@ tr:hover td { background: var(--surface2); }
         <div class="main-results">
           <div class="main-card"><div class="main-card-label">Asentamiento Secundario</div><div class="main-card-value" id="as-ss" style="color:#d87a6a">—</div><div class="main-card-unit" id="as-ss-unit">cm</div></div>
           <div class="main-card"><div class="main-card-label">t₂ / t₁</div><div class="main-card-value" id="as-ratio" style="color:var(--accent2)">—</div><div class="main-card-unit">relación tiempos</div></div>
-          <div class="main-card"><div class="main-card-label">Tasa por año</div><div class="main-card-value" id="as-rate" style="color:var(--accent3)">—</div><div class="main-card-unit" id="as-rate-unit">cm/año</div></div>
+          <div class="main-card"><div class="main-card-label">Tasa por año</div><div class="main-card-value" id="as-rate" style="color:var(--accent3)">—</div><div class="main-card-unit" id="as-rate-unit">cm/anio</div></div>
         </div>
         <div class="chart-section"><div class="chart-title">// Curva asentamiento secundario vs tiempo</div><canvas id="as-chart" height="260"></canvas></div>
         <button class="btn-reset" onclick="resetASecundaria()">← Nuevo cálculo</button>
@@ -608,7 +608,7 @@ function calcCarga(){
   showErr('c-error','');document.getElementById('c-results').classList.remove('visible');
   const c=gv('c-c')??0,phi=gv('c-phi'),gamma=gv('c-gamma'),B=gv('c-B'),Df=gv('c-Df'),fs=parseFloat(document.getElementById('c-fs').value),uni=document.getElementById('c-uni').value;
   let L=gv('c-L');if(tipoZapata!=='corrida')L=B;
-  if(phi===null){showErr('c-error','Ingresa φ.');return;}if(!gamma){showErr('c-error','Ingresa γ.');return;}if(!B){showErr('c-error','Ingresa B.');return;}if(!Df){showErr('c-error','Ingresa Df.');return;}if(tipoZapata==='corrida'&&L===null){showErr('c-error','Ingresa L.');return;}
+  if(phi===null){showErr('c-error','Ingresa phi.');return;}if(!gamma){showErr('c-error','Ingresa gamma.');return;}if(!B){showErr('c-error','Ingresa B.');return;}if(!Df){showErr('c-error','Ingresa Df.');return;}if(tipoZapata==='corrida'&&L===null){showErr('c-error','Ingresa L.');return;}
   const ul=uni==='kPa'?'kPa':'t/m²';
   [['terz',cT],['mey',cM],['han',cH],['ves',cV]].forEach(([id,fn])=>{const qu=fn(c,phi,gamma,B,L||B,Df),qa=qu/fs;document.getElementById('c-qu-'+id).textContent=fC(qu,uni);document.getElementById('c-unit-'+id).textContent='q_ult ('+ul+')';document.getElementById('c-qadm-'+id).textContent=fC(qa,uni)+' '+ul;});
   document.getElementById('c-sum-tipo').textContent=tipoZapata.toUpperCase();document.getElementById('c-sum-cp').textContent=c+' / '+phi+'°';document.getElementById('c-sum-bl').textContent=tipoZapata==='corrida'?B+'×'+L:B+'×'+B;document.getElementById('c-sum-df').textContent=Df+' m';
@@ -624,16 +624,16 @@ function fS(v,u){if(u==='m')return(v/100).toFixed(3);if(u==='mm')return(v*10).to
 function calcConsol(){
   showErr('d-error','');document.getElementById('d-results').classList.remove('visible');
   const H=gv('d-H'),Cc=gv('d-Cc'),e0=gv('d-e0'),s0=gv('d-s0'),ds=gv('d-ds'),Cv=gv('d-Cv'),t=gv('d-t'),uni=document.getElementById('d-uni').value;
-  if(!H){showErr('d-error','Ingresa H.');return;}if(!Cc){showErr('d-error','Ingresa Cc.');return;}if(!e0){showErr('d-error','Ingresa e₀.');return;}if(!s0){showErr('d-error','Ingresa σ\'₀.');return;}if(!ds){showErr('d-error','Ingresa Δσ.');return;}if(!Cv){showErr('d-error','Ingresa Cv.');return;}if(!t){showErr('d-error','Ingresa t.');return;}
+  if(!H){showErr('d-error','Ingresa H.');return;}if(!Cc){showErr('d-error','Ingresa Cc.');return;}if(!e0){showErr('d-error','Ingresa e₀.');return;}if(!s0){showErr('d-error','Ingresa sigma\'₀.');return;}if(!ds){showErr('d-error','Ingresa Delta-sigma.');return;}if(!Cv){showErr('d-error','Ingresa Cv.');return;}if(!t){showErr('d-error','Ingresa t.');return;}
   const Hdr=drenaje==='doble'?H/2:H,Hcm=Hdr*100,Sc=(Cc*H*100)/(1+e0)*Math.log10((s0+ds)/s0),Tv=(Cv*t*86400)/(Hcm*Hcm),U=Math.min(calcU(Tv),100),St=(U/100)*Sc;
   document.getElementById('d-sc').textContent=fS(Sc,uni);document.getElementById('d-sc-unit').textContent=uni;document.getElementById('d-u').textContent=U.toFixed(1)+'%';document.getElementById('d-st').textContent=fS(St,uni);document.getElementById('d-st-unit').textContent=uni;
   const tiempos=[1,7,30,90,180,365,730,1825,3650];
-  document.getElementById('d-tabla').innerHTML=tiempos.map(tx=>{const ts=tx*86400,tv=(Cv*ts)/(Hcm*Hcm),u=Math.min(calcU(tv),100),st=(u/100)*Sc,lbl=tx>=365?(tx/365).toFixed(1)+' años':tx+' días';return`<tr><td>${lbl}</td><td>${tv.toFixed(4)}</td><td class="td-u">${u.toFixed(1)}%</td><td class="td-sc">${fS(st,uni)} ${uni}</td></tr>`;}).join('');
+  document.getElementById('d-tabla').innerHTML=tiempos.map(tx=>{const ts=tx*86400,tv=(Cv*ts)/(Hcm*Hcm),u=Math.min(calcU(tv),100),st=(u/100)*Sc,lbl=tx>=365?(tx/365).toFixed(1)+' anios':tx+' dias';return`<tr><td>${lbl}</td><td>${tv.toFixed(4)}</td><td class="td-u">${u.toFixed(1)}%</td><td class="td-sc">${fS(st,uni)} ${uni}</td></tr>`;}).join('');
   const tMax=Math.max(t*2,3650),pts=60,labels=[],data=[];
   for(let i=0;i<=pts;i++){const ti=(tMax/pts)*i,tvi=(Cv*ti*86400)/(Hcm*Hcm),ui=Math.min(calcU(tvi),100),sti=(ui/100)*Sc;labels.push(ti<365?ti.toFixed(0)+'d':(ti/365).toFixed(1)+'a');data.push(parseFloat(fS(sti,uni)));}
   const ctx=document.getElementById('d-chart').getContext('2d');
   if(chartInst)chartInst.destroy();
-  chartInst=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Asentamiento ('+uni+')',data,borderColor:'#6ab8a8',backgroundColor:'rgba(106,184,168,0.08)',borderWidth:2.5,pointRadius:0,fill:true,tension:0.4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{family:'DM Mono',size:10},color:'#6a7058',maxTicksLimit:10},grid:{color:'rgba(42,46,32,0.8)'}},y:{reverse:true,title:{display:true,text:'Asentamiento ('+uni+')',font:{family:'DM Mono',size:11},color:'#6a7058'},ticks:{font:{family:'DM Mono',size:10},color:'#6a7058'},grid:{color:'rgba(42,46,32,0.8)'}}}}}});
+  chartInst=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[{label:'Asentamiento',data:data,borderColor:'#6ab8a8',backgroundColor:'rgba(106,184,168,0.08)',borderWidth:2,pointRadius:0,fill:true,tension:0.4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:10},grid:{color:'rgba(42,46,32,0.8)'}},y:{reverse:true,grid:{color:'rgba(42,46,32,0.8)'}}}}});
   document.getElementById('d-results').classList.add('visible');
 }
 function resetConsol(){['d-H','d-Cc','d-e0','d-s0','d-ds','d-Cv','d-t'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('d-results').classList.remove('visible');if(chartInst){chartInst.destroy();chartInst=null;}}
@@ -662,7 +662,7 @@ function calcAElastico(){
   if(!B){showAErr('ae-error','Ingresa B.');return;}
   if(!L){showAErr('ae-error','Ingresa L.');return;}
   if(!Es){showAErr('ae-error','Ingresa Es.');return;}
-  if(mu===null){showAErr('ae-error','Ingresa μ.');return;}
+  if(mu===null){showAErr('ae-error','Ingresa mu.');return;}
   const LB=L/B;
   let If;
   if(LB<=1)If=0.82;else if(LB<=2)If=0.82+(LB-1)*0.24;else if(LB<=3)If=1.06+(LB-2)*0.14;else if(LB<=5)If=1.20+(LB-3)*0.055;else If=1.50;
@@ -708,12 +708,12 @@ function calcASecundaria(){
   document.getElementById('as-ss-unit').textContent=uni;
   document.getElementById('as-ratio').textContent=(t2/t1).toFixed(2);
   document.getElementById('as-rate').textContent=fmtA(rate,uni);
-  document.getElementById('as-rate-unit').textContent=uni+'/año';
+  document.getElementById('as-rate-unit').textContent=uni+'/anio';
   const pts=50,labels=[],data=[];
   for(let i=0;i<=pts;i++){const ti=t1+(t2-t1)/pts*i,ss=(Ca*H*100)/(1+ep)*Math.log10(ti/t1);labels.push(ti>=365?(ti/365).toFixed(1)+'a':ti.toFixed(0)+'d');data.push(parseFloat(fmtA(Math.max(ss,0),uni)));}
   const ctx=document.getElementById('as-chart').getContext('2d');
   if(asChart)asChart.destroy();
-  asChart=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Ss ('+uni+')',data,borderColor:'#d87a6a',backgroundColor:'rgba(216,122,106,0.08)',borderWidth:2.5,pointRadius:0,fill:true,tension:0.3}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{family:'DM Mono',size:10},color:'#6a7058',maxTicksLimit:10},grid:{color:'rgba(42,46,32,0.8)'}},y:{reverse:true,title:{display:true,text:'Ss ('+uni+')',font:{family:'DM Mono',size:11},color:'#6a7058'},ticks:{font:{family:'DM Mono',size:10},color:'#6a7058'},grid:{color:'rgba(42,46,32,0.8)'}}}}}}); 
+  asChart=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[{label:'Ss',data:data,borderColor:'#d87a6a',backgroundColor:'rgba(216,122,106,0.08)',borderWidth:2,pointRadius:0,fill:true,tension:0.3}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:10},grid:{color:'rgba(42,46,32,0.8)'}},y:{reverse:true,grid:{color:'rgba(42,46,32,0.8)'}}}}});
   document.getElementById('as-results').classList.add('visible');
   document.getElementById('at-ss').value=Ss_cm.toFixed(2);
 }
@@ -732,7 +732,9 @@ function calcATotal(){
   document.getElementById('at-total').textContent=fmtAt(total,uni)+' '+uni;
   if(lim!==null){
     const ok=total<=lim,pct=(total/lim*100).toFixed(1);
-    document.getElementById('at-verif').innerHTML=`<div style="font-size:1.4rem;font-family:'Fraunces',serif;font-weight:900;color:${ok?'#6ab8a8':'#e07060'}">${ok?'✓ CUMPLE':'✗ EXCEDE'}</div><div style="font-size:12px;color:var(--muted);margin-top:6px;">S_total = ${fmtAt(total,uni)} ${uni} | Límite = ${fmtAt(lim,uni)} ${uni} | Uso: ${pct}%</div>`;
+    const color=ok?'#6ab8a8':'#e07060';
+    const msg=ok?'CUMPLE':'EXCEDE';
+    document.getElementById('at-verif').innerHTML='<div style="font-size:1.4rem;font-weight:900;color:'+color+'">'+msg+'</div><div style="font-size:12px;color:var(--muted);margin-top:6px;">S_total = '+fmtAt(total,uni)+' '+uni+' | Límite = '+fmtAt(lim,uni)+' '+uni+' | Uso: '+pct+'%</div>';
     document.getElementById('at-verif-box').style.display='block';
   } else {
     document.getElementById('at-verif-box').style.display='none';
