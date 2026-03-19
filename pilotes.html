@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pilotes — GeoCalc</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,700;0,900;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0a10;
+  --surface: #131018;
+  --surface2: #181520;
+  --border: #252030;
+  --accent: #d86ad8;
+  --accent2: #d8c86a;
+  --accent3: #6ad8a8;
+  --text: #e8d8f0;
+  --muted: #605870;
+  --dark: #08060c;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; }
+body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 60% 40% at 20% 20%, rgba(216,106,216,0.05) 0%, transparent 60%), radial-gradient(ellipse 50% 50% at 80% 80%, rgba(106,216,168,0.04) 0%, transparent 60%); pointer-events: none; z-index: 0; }
+
+.container { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
+.header { margin-bottom: 40px; animation: fadeIn 0.7s ease both; }
+.tag { display: inline-block; background: var(--dark); color: var(--accent); border: 1px solid rgba(216,106,216,0.2); font-size: 10px; letter-spacing: 2px; padding: 6px 14px; border-radius: 2px; margin-bottom: 16px; }
+h1 { font-family: 'Fraunces', serif; font-size: clamp(2rem,6vw,3.5rem); font-weight: 900; line-height: 1; letter-spacing: -2px; margin-bottom: 12px; }
+h1 span { color: var(--accent); font-style: italic; }
+.subtitle { font-size: 12px; color: var(--muted); letter-spacing: 1px; line-height: 1.6; }
+.divider { height: 1px; background: linear-gradient(90deg, var(--border), transparent); margin: 28px 0; }
+
+.tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 6px; }
+.tab-btn { flex: 1; background: none; border: none; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1px; padding: 10px 8px; border-radius: 3px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; text-align: center; }
+.tab-btn:hover { color: var(--text); background: var(--surface2); }
+.tab-btn.active { background: var(--accent); color: var(--dark); font-weight: 500; }
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.4s ease both; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 18px; }
+.form-grid-2 { grid-template-columns: 1fr 1fr; }
+.form-section { padding: 22px; border-right: 1px solid var(--border); }
+.form-section:last-child { border-right: none; }
+.section-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.field { margin-bottom: 12px; }
+.field:last-child { margin-bottom: 0; }
+label { display: block; font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 5px; }
+input[type="number"], select { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 9px 12px; font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text); transition: border-color 0.2s; outline: none; -moz-appearance: textfield; }
+input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(216,106,216,0.1); }
+input::placeholder { color: var(--border); }
+select option { background: var(--surface); }
+
+.btn-calc { width: 100%; background: var(--accent); color: var(--dark); border: none; padding: 16px; font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; cursor: pointer; border-radius: 3px; transition: all 0.2s; margin-bottom: 20px; }
+.btn-calc:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.error-box { display: none; background: rgba(192,57,43,0.1); border: 1px solid rgba(192,57,43,0.3); border-radius: 3px; padding: 12px 16px; font-size: 12px; color: #e07060; margin-bottom: 14px; }
+.error-box.visible { display: block; }
+.results-box { display: none; }
+.results-box.visible { display: block; animation: slideUp 0.4s cubic-bezier(0.4,0,0.2,1) both; }
+
+.res-main { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 16px; }
+.res-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 20px; text-align: center; }
+.res-label { font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+.res-value { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+.res-unit { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+
+.summary-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 18px 22px; margin-bottom: 14px; }
+.summary-card h3 { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+.summary-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+.s-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 4px; }
+.s-value { font-family: 'Fraunces', serif; font-size: 1rem; font-weight: 700; color: var(--accent); }
+
+.diagram-section { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 20px; margin-bottom: 14px; }
+.diagram-title { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+
+.info-box { background: rgba(216,106,216,0.05); border: 1px solid rgba(216,106,216,0.15); border-radius: 4px; padding: 14px 18px; margin-bottom: 16px; font-size: 12px; color: var(--muted); line-height: 1.7; }
+.info-box strong { color: var(--accent); }
+
+.btn-reset { background: none; border: 1px solid var(--border); color: var(--muted); padding: 8px 20px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1px; cursor: pointer; border-radius: 3px; transition: all 0.2s; margin-top: 4px; }
+.btn-reset:hover { border-color: var(--accent); color: var(--accent); }
+
+@keyframes fadeIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+@media (max-width:640px) {
+  .form-grid, .form-grid-2 { grid-template-columns: 1fr; }
+  .form-section { border-right: none; border-bottom: 1px solid var(--border); }
+  .res-main { grid-template-columns: 1fr; }
+  .summary-grid { grid-template-columns: repeat(2,1fr); }
+  .tabs { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="tag">DESAFIO 11 · PILOTES Y CIMENTACIONES PROFUNDAS</div>
+    <h1>Capa<span>cidad</span><br>de Pilotes</h1>
+    <p class="subtitle">// Metodo Alpha (arcilla) · Metodo Beta (arena) · Grupo de Pilotes</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showPTab('arcilla')">① Arcilla (Alpha)</button>
+    <button class="tab-btn" onclick="showPTab('arena')">② Arena (Beta)</button>
+    <button class="tab-btn" onclick="showPTab('grupo')">③ Grupo de Pilotes</button>
+  </div>
+
+  <!-- TAB 1: ARCILLA - METODO ALPHA -->
+  <div class="tab-content active" id="ptab-arcilla">
+    <div class="info-box">
+      <strong>Metodo Alpha (Tomlinson)</strong> — Para pilotes en arcilla. La resistencia por fuste depende de la cohesion no drenada (Su) y el factor de adhesion (alpha). La resistencia por punta usa 9·Su.
+      <br>Qult = Qp + Qs = (9·Su·Ap) + (alpha·Su·As)
+    </div>
+    <div class="form-grid">
+      <div class="form-section">
+        <div class="section-label">Geometria del Pilote</div>
+        <div class="field"><label>LONGITUD — L (m)</label><input type="number" id="a-L" placeholder="ej. 12" min="0" step="0.1"></div>
+        <div class="field"><label>DIAMETRO — D (m)</label><input type="number" id="a-D" placeholder="ej. 0.40" min="0" step="0.01"></div>
+        <div class="field"><label>TIPO DE PILOTE</label>
+          <select id="a-tipo">
+            <option value="hincado">Hincado (desplazamiento)</option>
+            <option value="perforado">Perforado (sin desplazamiento)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Propiedades del Suelo</div>
+        <div class="field"><label>COHESION NO DRENADA — Su (kPa)</label><input type="number" id="a-Su" placeholder="ej. 60" min="0" step="0.1"></div>
+        <div class="field"><label>PESO UNITARIO — gamma (kN/m3)</label><input type="number" id="a-gamma" placeholder="ej. 18" min="0" step="0.1"></div>
+        <div class="field"><label>FACTOR ADHESION — alpha (0-1)</label><input type="number" id="a-alpha" placeholder="ej. 0.75" min="0" max="1" step="0.01"></div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Opciones</div>
+        <div class="field"><label>FACTOR DE SEGURIDAD — FS</label>
+          <select id="a-fs">
+            <option value="2.5">FS = 2.5</option>
+            <option value="3" selected>FS = 3.0</option>
+            <option value="4">FS = 4.0</option>
+          </select>
+        </div>
+        <div class="field"><label>UNIDADES</label>
+          <select id="a-uni">
+            <option value="kN">kN</option>
+            <option value="ton">Toneladas</option>
+          </select>
+        </div>
+        <div class="field" style="margin-top:8px;">
+          <div style="font-size:11px;color:var(--muted);line-height:1.7;">alpha tipico:<br>Su&lt;25: 1.0<br>Su=50: 0.76<br>Su=100: 0.50</div>
+        </div>
+      </div>
+    </div>
+    <div class="error-box" id="a-error"></div>
+    <button class="btn-calc" onclick="calcArcilla()">→ Calcular Capacidad (Arcilla)</button>
+    <div class="results-box" id="a-results">
+      <div class="res-main">
+        <div class="res-card">
+          <div class="res-label">Q ultima</div>
+          <div class="res-value" id="a-Qult" style="color:var(--accent)">—</div>
+          <div class="res-unit" id="a-uni-lbl">kN</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Q admisible</div>
+          <div class="res-value" id="a-Qadm" style="color:var(--accent2)">—</div>
+          <div class="res-unit" id="a-uni-lbl2">kN</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Q punta / Q fuste</div>
+          <div class="res-value" id="a-ratio" style="color:var(--accent3);font-size:1.3rem">—</div>
+          <div class="res-unit">% punta / % fuste</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <h3>// Desglose</h3>
+        <div class="summary-grid">
+          <div><div class="s-label">Q punta (Qp)</div><div class="s-value" id="a-Qp">—</div></div>
+          <div><div class="s-label">Q fuste (Qs)</div><div class="s-value" id="a-Qs">—</div></div>
+          <div><div class="s-label">Area punta (Ap)</div><div class="s-value" id="a-Ap">— m2</div></div>
+          <div><div class="s-label">Area fuste (As)</div><div class="s-value" id="a-As">— m2</div></div>
+        </div>
+      </div>
+      <div class="diagram-section">
+        <div class="diagram-title">// Diagrama del Pilote</div>
+        <svg id="a-svg" viewBox="0 0 560 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:280px;"></svg>
+      </div>
+      <button class="btn-reset" onclick="resetArcilla()">← Nuevo calculo</button>
+    </div>
+  </div>
+
+  <!-- TAB 2: ARENA - METODO BETA -->
+  <div class="tab-content" id="ptab-arena">
+    <div class="info-box">
+      <strong>Metodo Beta (Meyerhof)</strong> — Para pilotes en arena. La resistencia por fuste usa el coeficiente beta = K·tan(delta). La resistencia por punta usa el factor Nq.
+      <br>Qult = Qp + Qs = (Ap·sigmav·Nq) + (beta·sigmav_med·As)
+    </div>
+    <div class="form-grid">
+      <div class="form-section">
+        <div class="section-label">Geometria</div>
+        <div class="field"><label>LONGITUD — L (m)</label><input type="number" id="s-L" placeholder="ej. 15" min="0" step="0.1"></div>
+        <div class="field"><label>DIAMETRO — D (m)</label><input type="number" id="s-D" placeholder="ej. 0.45" min="0" step="0.01"></div>
+        <div class="field"><label>TIPO DE PILOTE</label>
+          <select id="s-tipo">
+            <option value="hincado">Hincado</option>
+            <option value="perforado">Perforado</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Suelo (Arena)</div>
+        <div class="field"><label>ANGULO FRICCION — phi (grados)</label><input type="number" id="s-phi" placeholder="ej. 32" min="0" max="45" step="0.1"></div>
+        <div class="field"><label>PESO UNITARIO — gamma (kN/m3)</label><input type="number" id="s-gamma" placeholder="ej. 18" min="0" step="0.1"></div>
+        <div class="field"><label>NIVEL FREATICO — zw (m, 0=seco)</label><input type="number" id="s-zw" placeholder="ej. 0" min="0" step="0.1"></div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Opciones</div>
+        <div class="field"><label>COEF. PRESION LATERAL — K</label><input type="number" id="s-K" placeholder="ej. 1.0" min="0" step="0.1"></div>
+        <div class="field"><label>FACTOR DE SEGURIDAD</label>
+          <select id="s-fs">
+            <option value="2.5">FS = 2.5</option>
+            <option value="3" selected>FS = 3.0</option>
+            <option value="4">FS = 4.0</option>
+          </select>
+        </div>
+        <div class="field"><label>UNIDADES</label>
+          <select id="s-uni">
+            <option value="kN">kN</option>
+            <option value="ton">Toneladas</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="error-box" id="s-error"></div>
+    <button class="btn-calc" onclick="calcArena()">→ Calcular Capacidad (Arena)</button>
+    <div class="results-box" id="s-results">
+      <div class="res-main">
+        <div class="res-card">
+          <div class="res-label">Q ultima</div>
+          <div class="res-value" id="s-Qult" style="color:var(--accent)">—</div>
+          <div class="res-unit" id="s-uni-lbl">kN</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Q admisible</div>
+          <div class="res-value" id="s-Qadm" style="color:var(--accent2)">—</div>
+          <div class="res-unit" id="s-uni-lbl2">kN</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Q punta / Q fuste</div>
+          <div class="res-value" id="s-ratio" style="color:var(--accent3);font-size:1.3rem">—</div>
+          <div class="res-unit">% punta / % fuste</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <h3>// Desglose</h3>
+        <div class="summary-grid">
+          <div><div class="s-label">Q punta (Qp)</div><div class="s-value" id="s-Qp">—</div></div>
+          <div><div class="s-label">Q fuste (Qs)</div><div class="s-value" id="s-Qs">—</div></div>
+          <div><div class="s-label">Nq (punta)</div><div class="s-value" id="s-Nq">—</div></div>
+          <div><div class="s-label">Beta (fuste)</div><div class="s-value" id="s-beta">—</div></div>
+        </div>
+      </div>
+      <div class="diagram-section">
+        <div class="diagram-title">// Diagrama del Pilote</div>
+        <svg id="s-svg" viewBox="0 0 560 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:280px;"></svg>
+      </div>
+      <button class="btn-reset" onclick="resetArena()">← Nuevo calculo</button>
+    </div>
+  </div>
+
+  <!-- TAB 3: GRUPO DE PILOTES -->
+  <div class="tab-content" id="ptab-grupo">
+    <div class="info-box">
+      <strong>Grupo de Pilotes</strong> — La capacidad del grupo puede ser menor que la suma de pilotes individuales por efecto de grupo. Se verifica la eficiencia con el metodo de Converse-Labarre y el bloque equivalente.
+    </div>
+    <div class="form-grid">
+      <div class="form-section">
+        <div class="section-label">Pilote Individual</div>
+        <div class="field"><label>CAPACIDAD ADMISIBLE — Qadm (kN)</label><input type="number" id="g-Qadm" placeholder="ej. 500" min="0" step="1"></div>
+        <div class="field"><label>DIAMETRO — D (m)</label><input type="number" id="g-D" placeholder="ej. 0.40" min="0" step="0.01"></div>
+        <div class="field"><label>LONGITUD — L (m)</label><input type="number" id="g-L" placeholder="ej. 12" min="0" step="0.1"></div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Configuracion del Grupo</div>
+        <div class="field"><label>NUMERO DE PILOTES EN FILA — m</label><input type="number" id="g-m" placeholder="ej. 3" min="1" step="1"></div>
+        <div class="field"><label>NUMERO DE PILOTES EN COLUMNA — n</label><input type="number" id="g-n" placeholder="ej. 3" min="1" step="1"></div>
+        <div class="field"><label>SEPARACION ENTRE EJES — s (m)</label><input type="number" id="g-s" placeholder="ej. 1.2" min="0" step="0.01"></div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Suelo</div>
+        <div class="field"><label>COHESION — Su (kPa)</label><input type="number" id="g-Su" placeholder="ej. 60" min="0" step="0.1"></div>
+        <div class="field"><label>PESO UNITARIO — gamma (kN/m3)</label><input type="number" id="g-gamma" placeholder="ej. 18" min="0" step="0.1"></div>
+        <div class="field"><label>FACTOR DE SEGURIDAD</label>
+          <select id="g-fs">
+            <option value="2.5">FS = 2.5</option>
+            <option value="3" selected>FS = 3.0</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="error-box" id="g-error"></div>
+    <button class="btn-calc" onclick="calcGrupo()">→ Calcular Capacidad del Grupo</button>
+    <div class="results-box" id="g-results">
+      <div class="res-main">
+        <div class="res-card">
+          <div class="res-label">Eficiencia del Grupo</div>
+          <div class="res-value" id="g-eff" style="color:var(--accent)">—</div>
+          <div class="res-unit">%</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Q grupo admisible</div>
+          <div class="res-value" id="g-Qg" style="color:var(--accent2)">—</div>
+          <div class="res-unit">kN</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">N pilotes total</div>
+          <div class="res-value" id="g-N" style="color:var(--accent3)">—</div>
+          <div class="res-unit">pilotes</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <h3>// Verificacion</h3>
+        <div class="summary-grid">
+          <div><div class="s-label">Q suma individual</div><div class="s-value" id="g-Qsum">— kN</div></div>
+          <div><div class="s-label">Q bloque equiv.</div><div class="s-value" id="g-Qbloque">— kN</div></div>
+          <div><div class="s-label">Critico</div><div class="s-value" id="g-critico">—</div></div>
+          <div><div class="s-label">Q grupo / pilote</div><div class="s-value" id="g-Qpp">— kN/pilote</div></div>
+        </div>
+      </div>
+      <div class="diagram-section">
+        <div class="diagram-title">// Vista en Planta del Grupo</div>
+        <svg id="g-svg" viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:240px;"></svg>
+      </div>
+      <button class="btn-reset" onclick="resetGrupo()">← Nuevo calculo</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showPTab(id) {
+  ['arcilla','arena','grupo'].forEach(t => {
+    document.getElementById('ptab-'+t).classList.remove('active');
+    document.getElementById('ptab-'+t).style.display='none';
+  });
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('ptab-'+id).classList.add('active');
+  document.getElementById('ptab-'+id).style.display='block';
+  ['arcilla','arena','grupo'].forEach((t,i) => { if(t===id) document.querySelectorAll('.tab-btn')[i].classList.add('active'); });
+}
+
+function gv(id){const v=parseFloat(document.getElementById(id).value);return isNaN(v)?null:v;}
+function showPErr(id,msg){const el=document.getElementById(id);if(msg){el.textContent=msg;el.classList.add('visible');}else el.classList.remove('visible');}
+function fmtP(v,uni){return uni==='ton'?(v/9.81).toFixed(1)+'ton':v.toFixed(1)+' kN';}
+
+// ── ARCILLA ──
+function calcArcilla() {
+  showPErr('a-error','');document.getElementById('a-results').classList.remove('visible');
+  const L=gv('a-L'),D=gv('a-D'),Su=gv('a-Su'),gamma=gv('a-gamma'),alpha=gv('a-alpha');
+  const fs=parseFloat(document.getElementById('a-fs').value);
+  const uni=document.getElementById('a-uni').value;
+  if(!L){showPErr('a-error','Ingresa L.');return;}
+  if(!D){showPErr('a-error','Ingresa D.');return;}
+  if(!Su){showPErr('a-error','Ingresa Su.');return;}
+  if(alpha===null){showPErr('a-error','Ingresa alpha.');return;}
+
+  const Ap=Math.PI*D*D/4;
+  const As=Math.PI*D*L;
+  const Qp=9*Su*Ap;
+  const Qs=alpha*Su*As;
+  const Qult=Qp+Qs;
+  const Qadm=Qult/fs;
+  const pctPunta=(Qp/Qult*100).toFixed(0);
+  const pctFuste=(Qs/Qult*100).toFixed(0);
+
+  const fmtV=(v)=>uni==='ton'?(v/9.81).toFixed(1):v.toFixed(1);
+  const lbl=uni==='ton'?'ton':'kN';
+
+  document.getElementById('a-Qult').textContent=fmtV(Qult);
+  document.getElementById('a-uni-lbl').textContent=lbl;
+  document.getElementById('a-Qadm').textContent=fmtV(Qadm);
+  document.getElementById('a-uni-lbl2').textContent=lbl;
+  document.getElementById('a-ratio').textContent=pctPunta+'% / '+pctFuste+'%';
+  document.getElementById('a-Qp').textContent=fmtV(Qp)+' '+lbl;
+  document.getElementById('a-Qs').textContent=fmtV(Qs)+' '+lbl;
+  document.getElementById('a-Ap').textContent=Ap.toFixed(4)+' m2';
+  document.getElementById('a-As').textContent=As.toFixed(2)+' m2';
+
+  dibujarPilote('a-svg',L,D,Qp,Qs,Qult,gamma,'#d86ad8');
+  document.getElementById('a-results').classList.add('visible');
+}
+function resetArcilla(){['a-L','a-D','a-Su','a-gamma','a-alpha'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('a-results').classList.remove('visible');}
+
+// ── ARENA ──
+function calcArena() {
+  showPErr('s-error','');document.getElementById('s-results').classList.remove('visible');
+  const L=gv('s-L'),D=gv('s-D'),phi=gv('s-phi'),gamma=gv('s-gamma');
+  const zw=gv('s-zw')??0, K=gv('s-K')??1.0;
+  const fs=parseFloat(document.getElementById('s-fs').value);
+  const uni=document.getElementById('s-uni').value;
+  if(!L){showPErr('s-error','Ingresa L.');return;}
+  if(!D){showPErr('s-error','Ingresa D.');return;}
+  if(phi===null){showPErr('s-error','Ingresa phi.');return;}
+  if(!gamma){showPErr('s-error','Ingresa gamma.');return;}
+
+  const r=phi*Math.PI/180;
+  // Nq para pilotes (Berezantsev)
+  const Nq=Math.exp(Math.PI*Math.tan(r))*Math.pow(Math.tan(Math.PI/4+r/2),2)*0.5;
+  // Esfuerzo vertical en punta
+  const gammaw=9.81;
+  const sigmaV_punta=zw>0?(gamma*zw+(gamma-gammaw)*(L-zw)):(gamma*L);
+  const sigmaV_med=sigmaV_punta/2;
+
+  const Ap=Math.PI*D*D/4;
+  const As=Math.PI*D*L;
+  const delta=phi*0.75*Math.PI/180; // angulo friccion pilote-suelo
+  const beta=K*Math.tan(delta);
+
+  const Qp=Math.min(sigmaV_punta*Nq*Ap, 11000*Ap); // limite maximo
+  const Qs=beta*sigmaV_med*As;
+  const Qult=Qp+Qs;
+  const Qadm=Qult/fs;
+  const pctPunta=(Qp/Qult*100).toFixed(0);
+  const pctFuste=(Qs/Qult*100).toFixed(0);
+
+  const fmtV=(v)=>uni==='ton'?(v/9.81).toFixed(1):v.toFixed(1);
+  const lbl=uni==='ton'?'ton':'kN';
+
+  document.getElementById('s-Qult').textContent=fmtV(Qult);
+  document.getElementById('s-uni-lbl').textContent=lbl;
+  document.getElementById('s-Qadm').textContent=fmtV(Qadm);
+  document.getElementById('s-uni-lbl2').textContent=lbl;
+  document.getElementById('s-ratio').textContent=pctPunta+'% / '+pctFuste+'%';
+  document.getElementById('s-Qp').textContent=fmtV(Qp)+' '+lbl;
+  document.getElementById('s-Qs').textContent=fmtV(Qs)+' '+lbl;
+  document.getElementById('s-Nq').textContent=Nq.toFixed(2);
+  document.getElementById('s-beta').textContent=beta.toFixed(3);
+
+  dibujarPilote('s-svg',L,D,Qp,Qs,Qult,gamma,'#d8c86a');
+  document.getElementById('s-results').classList.add('visible');
+}
+function resetArena(){['s-L','s-D','s-phi','s-gamma','s-zw','s-K'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('s-results').classList.remove('visible');}
+
+// ── GRUPO ──
+function calcGrupo() {
+  showPErr('g-error','');document.getElementById('g-results').classList.remove('visible');
+  const Qadm=gv('g-Qadm'),D=gv('g-D'),L=gv('g-L');
+  const m=gv('g-m'),n=gv('g-n'),s=gv('g-s');
+  const Su=gv('g-Su'),gamma=gv('g-gamma');
+  const fs=parseFloat(document.getElementById('g-fs').value);
+  if(!Qadm){showPErr('g-error','Ingresa Qadm del pilote individual.');return;}
+  if(!D){showPErr('g-error','Ingresa D.');return;}
+  if(!L){showPErr('g-error','Ingresa L.');return;}
+  if(!m||!n){showPErr('g-error','Ingresa m y n.');return;}
+  if(!s){showPErr('g-error','Ingresa separacion s.');return;}
+
+  const N=m*n;
+  // Eficiencia Converse-Labarre
+  const theta=Math.atan(D/s)*180/Math.PI;
+  const Eg=1-(theta/90)*((m-1)*n+(n-1)*m)/(m*n);
+  const QsumInd=N*Qadm;
+  const Qgrupo_ind=Eg*QsumInd;
+
+  // Bloque equivalente (para arcilla)
+  let Qbloque=Infinity;
+  if(Su && gamma) {
+    const Bg=(m-1)*s+D;
+    const Lg=(n-1)*s+D;
+    const As_bloque=2*(Bg+Lg)*L;
+    const Ap_bloque=Bg*Lg;
+    const Qbloque_ult=Su*As_bloque+9*Su*Ap_bloque;
+    Qbloque=Qbloque_ult/fs;
+  }
+
+  const Qg=Math.min(Qgrupo_ind, Qbloque);
+  const critico=Qgrupo_ind<=Qbloque?'Grupo individual':'Bloque equiv.';
+
+  document.getElementById('g-eff').textContent=(Eg*100).toFixed(1);
+  document.getElementById('g-eff').style.color=Eg>=0.7?'#6ad8a8':'#d8c86a';
+  document.getElementById('g-Qg').textContent=Qg.toFixed(0)+' kN';
+  document.getElementById('g-N').textContent=N;
+  document.getElementById('g-Qsum').textContent=QsumInd.toFixed(0)+' kN';
+  document.getElementById('g-Qbloque').textContent=Qbloque===Infinity?'N/A':Qbloque.toFixed(0)+' kN';
+  document.getElementById('g-critico').textContent=critico;
+  document.getElementById('g-Qpp').textContent=(Qg/N).toFixed(0)+' kN/pilote';
+
+  dibujarGrupo('g-svg',m,n,s,D);
+  document.getElementById('g-results').classList.add('visible');
+}
+function resetGrupo(){['g-Qadm','g-D','g-L','g-m','g-n','g-s','g-Su','g-gamma'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('g-results').classList.remove('visible');}
+
+// ── DIAGRAMAS ──
+function dibujarPilote(svgId,L,D,Qp,Qs,Qult,gamma,color) {
+  const svg=document.getElementById(svgId);
+  const W=560,H=320;
+  const margin={left:80,right:120,top:30,bottom:30};
+  const dH=H-margin.top-margin.bottom;
+  const scY=dH/L;
+  const cx=margin.left+60;
+  const Dpx=Math.max(D*scY*3,20);
+  const topY=margin.top, botY=margin.top+dH;
+
+  let html='';
+  // Suelo
+  html+=`<rect x="${margin.left}" y="${topY}" width="140" height="${dH}" fill="rgba(216,106,216,0.06)" stroke="none"/>`;
+  // Pilote
+  html+=`<rect x="${cx-Dpx/2}" y="${topY}" width="${Dpx}" height="${dH-10}" fill="${color}" opacity="0.3" stroke="${color}" stroke-width="1.5"/>`;
+  // Punta
+  html+=`<polygon points="${cx-Dpx/2},${botY-10} ${cx},${botY} ${cx+Dpx/2},${botY-10}" fill="${color}" opacity="0.6"/>`;
+
+  // Cota L
+  html+=`<line x1="${margin.left-15}" y1="${topY}" x2="${margin.left-15}" y2="${botY}" stroke="#605870" stroke-width="1"/>`;
+  html+=`<text x="${margin.left-17}" y="${topY+dH/2}" fill="#605870" font-family="DM Mono" font-size="9" text-anchor="middle" transform="rotate(-90,${margin.left-17},${topY+dH/2})">L=${L}m</text>`;
+
+  // Barra de Qs (fuste)
+  const qsBar=Math.min(Qs/Qult*80,80);
+  html+=`<rect x="${cx+Dpx/2+10}" y="${topY+dH*0.1}" width="${qsBar}" height="${dH*0.8}" fill="rgba(106,216,168,0.3)" stroke="#6ad8a8" stroke-width="1"/>`;
+  html+=`<text x="${cx+Dpx/2+10+qsBar+4}" y="${topY+dH/2}" fill="#6ad8a8" font-family="DM Mono" font-size="9">Qs</text>`;
+
+  // Barra de Qp (punta)
+  const qpBar=Math.min(Qp/Qult*80,80);
+  html+=`<rect x="${cx+Dpx/2+10}" y="${botY-15}" width="${qpBar}" height="12" fill="rgba(216,200,106,0.5)" stroke="#d8c86a" stroke-width="1"/>`;
+  html+=`<text x="${cx+Dpx/2+10+qpBar+4}" y="${botY-6}" fill="#d8c86a" font-family="DM Mono" font-size="9">Qp</text>`;
+
+  // D label
+  html+=`<line x1="${cx-Dpx/2}" y1="${topY-10}" x2="${cx+Dpx/2}" y2="${topY-10}" stroke="#605870" stroke-width="1"/>`;
+  html+=`<text x="${cx}" y="${topY-14}" fill="#605870" font-family="DM Mono" font-size="9" text-anchor="middle">D=${D}m</text>`;
+
+  svg.innerHTML=html;
+}
+
+function dibujarGrupo(svgId,m,n,s,D) {
+  const svg=document.getElementById(svgId);
+  const W=560,H=280;
+  const scale=Math.min(180/(Math.max(m,n)*s),40);
+  const Dpx=Math.max(D*scale,8);
+  const spx=s*scale;
+  const totalW=(m-1)*spx+Dpx, totalH=(n-1)*spx+Dpx;
+  const startX=(W-totalW)/2, startY=(H-totalH)/2;
+
+  let html='';
+  // Caja del grupo
+  html+=`<rect x="${startX-10}" y="${startY-10}" width="${totalW+20}" height="${totalH+20}" fill="rgba(216,106,216,0.05)" stroke="rgba(216,106,216,0.2)" stroke-width="1" stroke-dasharray="4,3" rx="3"/>`;
+
+  for(let i=0;i<m;i++) {
+    for(let j=0;j<n;j++) {
+      const cx=startX+Dpx/2+i*spx;
+      const cy=startY+Dpx/2+j*spx;
+      html+=`<circle cx="${cx}" cy="${cy}" r="${Dpx/2}" fill="rgba(216,106,216,0.3)" stroke="#d86ad8" stroke-width="1.5"/>`;
+      html+=`<circle cx="${cx}" cy="${cy}" r="2" fill="#d86ad8"/>`;
+    }
+  }
+
+  // Labels
+  html+=`<text x="${W/2}" y="${startY+totalH+35}" fill="#605870" font-family="DM Mono" font-size="9" text-anchor="middle">${m} x ${n} = ${m*n} pilotes · s=${s}m · D=${D}m</text>`;
+  // Separacion
+  if(m>1) {
+    const y1=startY+totalH+16, x1=startX+Dpx/2, x2=startX+Dpx/2+spx;
+    html+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y1}" stroke="#605870" stroke-width="1"/>`;
+    html+=`<text x="${(x1+x2)/2}" y="${y1+10}" fill="#605870" font-family="DM Mono" font-size="8" text-anchor="middle">s=${s}m</text>`;
+  }
+
+  svg.innerHTML=html;
+}
+</script>
+</body>
+</html>

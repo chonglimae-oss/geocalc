@@ -50,6 +50,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba
 .tool-card.muro::before { background: #b87ad8; }
 .tool-card.talud::before { background: #6aa8d8; }
 .tool-card.compact::before { background: #c8d840; }
+.tool-card.pilotes::before { background: #d86ad8; }
 .tool-card:hover { border-color: rgba(168,200,64,0.2); transform: translateY(-4px); background: var(--surface2); }
 .tool-card:hover::before { transform: scaleX(1); }
 .tool-icon { font-size: 28px; margin-bottom: 16px; display: block; }
@@ -62,6 +63,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba
 .tool-card.muro .tool-name { color: #b87ad8; }
 .tool-card.talud .tool-name { color: #6aa8d8; }
 .tool-card.compact .tool-name { color: #c8d840; }
+.tool-card.pilotes .tool-name { color: #d86ad8; }
 .tool-desc { font-size: 11px; color: var(--muted); line-height: 1.6; }
 .tool-arrow { position: absolute; top: 24px; right: 24px; color: var(--border); font-size: 16px; transition: all 0.2s; }
 .tool-card:hover .tool-arrow { color: var(--accent); transform: translate(2px,-2px); }
@@ -191,6 +193,7 @@ tr:hover td { background: var(--surface2); }
     <button class="nav-btn" onclick="showPage('muro')">Muros</button>
     <button class="nav-btn" onclick="showPage('talud')">Taludes</button>
     <button class="nav-btn" onclick="showPage('compact')">Compactacion</button>
+    <button class="nav-btn" onclick="showPage('pilotes')">Pilotes</button>
   </div>
 </nav>
 
@@ -251,9 +254,16 @@ tr:hover td { background: var(--surface2); }
         <div class="tool-name">Compactación</div>
         <div class="tool-desc">Curva Proctor, densidad máxima, humedad óptima y control de campo.</div>
       </div>
+      <div class="tool-card pilotes" onclick="showPage('pilotes')">
+        <span class="tool-arrow">↗</span>
+        <span class="tool-icon">🏗️</span>
+        <div class="tool-number">HERRAMIENTA 08</div>
+        <div class="tool-name">Pilotes</div>
+        <div class="tool-desc">Capacidad en arcilla (Alpha) y arena (Beta). Grupo de pilotes y eficiencia.</div>
+      </div>
     </div>
     <div class="stats-grid">
-      <div class="stat-item"><div class="stat-value">7</div><div class="stat-label">HERRAMIENTAS ACTIVAS</div></div>
+      <div class="stat-item"><div class="stat-value">8</div><div class="stat-label">HERRAMIENTAS ACTIVAS</div></div>
       <div class="stat-item"><div class="stat-value">4</div><div class="stat-label">MÉTODOS DE CÁLCULO</div></div>
       <div class="stat-item"><div class="stat-value">∞</div><div class="stat-label">CÁLCULOS DISPONIBLES</div></div>
     </div>
@@ -568,7 +578,7 @@ function showPage(id) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
-  document.querySelectorAll('.nav-btn')[['home','sucs','carga','consol','asent','muro','talud','compact'].indexOf(id)].classList.add('active');
+  document.querySelectorAll('.nav-btn')[['home','sucs','carga','consol','asent','muro','talud','compact','pilotes'].indexOf(id)].classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -1263,6 +1273,25 @@ function resetSInfinito(){['si-beta','si-z','si-c','si-phi','si-gamma','si-gamma
         Densidad maxima seca · Humedad optima · Grado de compactacion
       </div>
       <a href="compactacion.html" style="display:inline-block;background:#c8d840;color:var(--dark);padding:14px 32px;border-radius:3px;font-family:'Fraunces',serif;font-size:16px;font-weight:700;text-decoration:none;">&#8594; Abrir Herramienta</a>
+    </div>
+  </div>
+</div>
+<!-- PILOTES -->
+<div class="page" id="page-pilotes">
+  <div class="tool-page">
+    <div class="page-header">
+      <div><div style="font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;">// HERRAMIENTA 08</div><h2 style="color:#d86ad8">Capacidad<br>de Pilotes</h2></div>
+      <button class="back-btn" onclick="showPage('home')">← Inicio</button>
+    </div>
+    <div class="divider"></div>
+    <div style="background:rgba(216,106,216,0.05);border:1px solid rgba(216,106,216,0.2);border-radius:4px;padding:32px 24px;text-align:center;">
+      <div style="font-size:32px;margin-bottom:16px;">🏗️</div>
+      <div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:#d86ad8;margin-bottom:12px;">Herramienta de Pilotes</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:24px;">
+        Metodo Alpha (Arcilla) · Metodo Beta (Arena) · Grupo de Pilotes<br>
+        Capacidad por punta · Capacidad por fuste · Eficiencia de grupo
+      </div>
+      <a href="pilotes.html" style="display:inline-block;background:#d86ad8;color:var(--dark);padding:14px 32px;border-radius:3px;font-family:'Fraunces',serif;font-size:16px;font-weight:700;text-decoration:none;">→ Abrir Herramienta</a>
     </div>
   </div>
 </div>
