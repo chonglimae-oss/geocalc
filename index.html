@@ -40,7 +40,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba
 .home h1 em { font-style: italic; color: var(--accent); }
 .home p { font-size: 13px; color: var(--muted); line-height: 1.7; max-width: 480px; margin-bottom: 60px; }
 .tools-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
-.tools-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 16px; margin-bottom: 48px; }
+.tools-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 48px; }
 .tool-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 28px 24px; cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden; }
 .tool-card::before { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; transform: scaleX(0); transform-origin: left; transition: transform 0.3s; }
 .tool-card.sucs::before { background: var(--accent2); }
@@ -48,6 +48,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba
 .tool-card.consol::before { background: var(--accent3); }
 .tool-card.asent::before { background: #d87a6a; }
 .tool-card.muro::before { background: #b87ad8; }
+.tool-card.talud::before { background: #6aa8d8; }
 .tool-card:hover { border-color: rgba(168,200,64,0.2); transform: translateY(-4px); background: var(--surface2); }
 .tool-card:hover::before { transform: scaleX(1); }
 .tool-icon { font-size: 28px; margin-bottom: 16px; display: block; }
@@ -58,6 +59,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba
 .tool-card.consol .tool-name { color: var(--accent3); }
 .tool-card.asent .tool-name { color: #d87a6a; }
 .tool-card.muro .tool-name { color: #b87ad8; }
+.tool-card.talud .tool-name { color: #6aa8d8; }
 .tool-desc { font-size: 11px; color: var(--muted); line-height: 1.6; }
 .tool-arrow { position: absolute; top: 24px; right: 24px; color: var(--border); font-size: 16px; transition: all 0.2s; }
 .tool-card:hover .tool-arrow { color: var(--accent); transform: translate(2px,-2px); }
@@ -185,6 +187,7 @@ tr:hover td { background: var(--surface2); }
     <button class="nav-btn" onclick="showPage('consol')">Consolidación</button>
     <button class="nav-btn" onclick="showPage('asent')">Asentamientos</button>
     <button class="nav-btn" onclick="showPage('muro')">Muros</button>
+    <button class="nav-btn" onclick="showPage('talud')">Taludes</button>
   </div>
 </nav>
 
@@ -231,9 +234,16 @@ tr:hover td { background: var(--surface2); }
         <div class="tool-name">Muros de Contención</div>
         <div class="tool-desc">Rankine. Verificación de volteo, deslizamiento y excentricidad con diagrama.</div>
       </div>
+      <div class="tool-card talud" onclick="showPage('talud')">
+        <span class="tool-arrow">↗</span>
+        <span class="tool-icon">⛰️</span>
+        <div class="tool-number">HERRAMIENTA 06</div>
+        <div class="tool-name">Análisis de Taludes</div>
+        <div class="tool-desc">Bishop Simplificado, Fellenius y Talud Infinito. Factor de seguridad al deslizamiento.</div>
+      </div>
     </div>
     <div class="stats-grid">
-      <div class="stat-item"><div class="stat-value">5</div><div class="stat-label">HERRAMIENTAS ACTIVAS</div></div>
+      <div class="stat-item"><div class="stat-value">6</div><div class="stat-label">HERRAMIENTAS ACTIVAS</div></div>
       <div class="stat-item"><div class="stat-value">4</div><div class="stat-label">MÉTODOS DE CÁLCULO</div></div>
       <div class="stat-item"><div class="stat-value">∞</div><div class="stat-label">CÁLCULOS DISPONIBLES</div></div>
     </div>
@@ -548,7 +558,7 @@ function showPage(id) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
-  document.querySelectorAll('.nav-btn')[['home','sucs','carga','consol','asent','muro'].indexOf(id)].classList.add('active');
+  document.querySelectorAll('.nav-btn')[['home','sucs','carga','consol','asent','muro','talud'].indexOf(id)].classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -963,6 +973,268 @@ function resetMuroGC() {
   document.getElementById('mw-results').classList.remove('visible');
   showMwErr('');
 }
+</script>
+<!-- TALUDES -->
+<div class="page" id="page-talud">
+  <div class="tool-page">
+    <div class="page-header">
+      <div><div style="font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;">// HERRAMIENTA 06</div><h2 style="color:#6aa8d8">Analisis de<br>Taludes</h2></div>
+      <button class="back-btn" onclick="showPage('home')">← Inicio</button>
+    </div>
+    <div class="divider"></div>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:4px;margin-bottom:20px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:6px;">
+      <button class="nav-btn active" id="stab-btn-bishop" onclick="showSTab('bishop')" style="flex:1;text-align:center;">① Bishop</button>
+      <button class="nav-btn" id="stab-btn-fellenius" onclick="showSTab('fellenius')" style="flex:1;text-align:center;">② Fellenius</button>
+      <button class="nav-btn" id="stab-btn-infinito" onclick="showSTab('infinito')" style="flex:1;text-align:center;">③ Talud Infinito</button>
+    </div>
+
+    <!-- BISHOP -->
+    <div id="stab-bishop" style="animation:fadeIn 0.4s ease both;">
+      <div style="background:rgba(106,168,216,0.05);border:1px solid rgba(106,168,216,0.15);border-radius:4px;padding:14px 18px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.7;"><strong style="color:#6aa8d8">Bishop Simplificado</strong> — Equilibrio de momentos con dovelas. FS>=1.5 estable · FS 1.0-1.5 marginal · FS<1.0 inestable</div>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;">
+        <div class="form-section">
+          <div class="section-label">Geometria</div>
+          <div class="field"><label>ALTURA — H (m)</label><input type="number" id="sb-H" placeholder="ej. 8.0" min="0" step="0.1"></div>
+          <div class="field"><label>ANGULO TALUD — beta (grados)</label><input type="number" id="sb-beta" placeholder="ej. 45" min="0" max="90" step="0.1"></div>
+          <div class="field"><label>RADIO FALLA — R (m)</label><input type="number" id="sb-R" placeholder="ej. 12" min="0" step="0.1"></div>
+        </div>
+        <div class="form-section">
+          <div class="section-label">Suelo</div>
+          <div class="field"><label>COHESION — c (kPa)</label><input type="number" id="sb-c" placeholder="ej. 20" min="0" step="0.1"></div>
+          <div class="field"><label>ANGULO FRICCION — phi (grados)</label><input type="number" id="sb-phi" placeholder="ej. 25" min="0" max="45" step="0.1"></div>
+          <div class="field"><label>PESO UNITARIO — gamma (kN/m3)</label><input type="number" id="sb-gamma" placeholder="ej. 18" min="0" step="0.1"></div>
+        </div>
+        <div class="form-section">
+          <div class="section-label">Opciones</div>
+          <div class="field"><label>NUMERO DOVELAS — n</label><input type="number" id="sb-n" placeholder="ej. 10" min="3" max="20" step="1"></div>
+          <div class="field"><label>NIVEL FREATICO — hw (m)</label><input type="number" id="sb-hw" placeholder="ej. 0" min="0" step="0.1"></div>
+        </div>
+      </div>
+      <div class="error-box" id="sb-error"></div>
+      <button class="btn-calc" onclick="calcSBishop()">→ Calcular FS (Bishop)</button>
+      <div class="results-box" id="sb-results">
+        <div class="main-results">
+          <div class="main-card"><div class="main-card-label">FS Bishop</div><div class="main-card-value" id="sb-fs" style="color:#6aa8d8">—</div><div class="main-card-unit" id="sb-estado">—</div></div>
+          <div class="main-card"><div class="main-card-label">Fuerza Resistente</div><div class="main-card-value" id="sb-Fr" style="color:var(--accent2)">—</div><div class="main-card-unit">kN/m</div></div>
+          <div class="main-card"><div class="main-card-label">Fuerza Actuante</div><div class="main-card-value" id="sb-Fa" style="color:var(--accent3)">—</div><div class="main-card-unit">kN/m</div></div>
+        </div>
+        <div class="chart-section"><div class="chart-title">// Diagrama del Talud</div><svg id="sb-svg" viewBox="0 0 580 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:240px;"></svg></div>
+        <button class="btn-reset" onclick="resetSBishop()">← Nuevo calculo</button>
+      </div>
+    </div>
+
+    <!-- FELLENIUS -->
+    <div id="stab-fellenius" style="display:none;animation:fadeIn 0.4s ease both;">
+      <div style="background:rgba(106,168,216,0.05);border:1px solid rgba(106,168,216,0.15);border-radius:4px;padding:14px 18px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.7;"><strong style="color:#6aa8d8">Fellenius (Ordinario)</strong> — Metodo clasico conservador. FS_Fell ~ 0.85-0.95 x FS_Bishop</div>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;">
+        <div class="form-section">
+          <div class="section-label">Geometria</div>
+          <div class="field"><label>ALTURA — H (m)</label><input type="number" id="sf-H" placeholder="ej. 8.0" min="0" step="0.1"></div>
+          <div class="field"><label>ANGULO TALUD — beta (grados)</label><input type="number" id="sf-beta" placeholder="ej. 45" min="0" max="90" step="0.1"></div>
+          <div class="field"><label>RADIO FALLA — R (m)</label><input type="number" id="sf-R" placeholder="ej. 12" min="0" step="0.1"></div>
+        </div>
+        <div class="form-section">
+          <div class="section-label">Suelo</div>
+          <div class="field"><label>COHESION — c (kPa)</label><input type="number" id="sf-c" placeholder="ej. 20" min="0" step="0.1"></div>
+          <div class="field"><label>ANGULO FRICCION — phi (grados)</label><input type="number" id="sf-phi" placeholder="ej. 25" min="0" max="45" step="0.1"></div>
+          <div class="field"><label>PESO UNITARIO — gamma (kN/m3)</label><input type="number" id="sf-gamma" placeholder="ej. 18" min="0" step="0.1"></div>
+        </div>
+        <div class="form-section">
+          <div class="section-label">Opciones</div>
+          <div class="field"><label>NUMERO DOVELAS — n</label><input type="number" id="sf-n" placeholder="ej. 10" min="3" max="20" step="1"></div>
+          <div class="field"><label>NIVEL FREATICO — hw (m)</label><input type="number" id="sf-hw" placeholder="ej. 0" min="0" step="0.1"></div>
+        </div>
+      </div>
+      <div class="error-box" id="sf-error"></div>
+      <button class="btn-calc" onclick="calcSFellenius()">→ Calcular FS (Fellenius)</button>
+      <div class="results-box" id="sf-results">
+        <div class="main-results">
+          <div class="main-card"><div class="main-card-label">FS Fellenius</div><div class="main-card-value" id="sf-fs" style="color:#6aa8d8">—</div><div class="main-card-unit" id="sf-estado">—</div></div>
+          <div class="main-card"><div class="main-card-label">Momento Resistente</div><div class="main-card-value" id="sf-Mr" style="color:var(--accent2)">—</div><div class="main-card-unit">kN·m/m</div></div>
+          <div class="main-card"><div class="main-card-label">Momento Actuante</div><div class="main-card-value" id="sf-Ma" style="color:var(--accent3)">—</div><div class="main-card-unit">kN·m/m</div></div>
+        </div>
+        <div class="chart-section"><div class="chart-title">// Diagrama del Talud</div><svg id="sf-svg" viewBox="0 0 580 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:240px;"></svg></div>
+        <button class="btn-reset" onclick="resetSFellenius()">← Nuevo calculo</button>
+      </div>
+    </div>
+
+    <!-- TALUD INFINITO -->
+    <div id="stab-infinito" style="display:none;animation:fadeIn 0.4s ease both;">
+      <div style="background:rgba(106,168,216,0.05);border:1px solid rgba(106,168,216,0.15);border-radius:4px;padding:14px 18px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.7;"><strong style="color:#6aa8d8">Talud Infinito</strong> — Falla paralela a la superficie. FS = (c + (gamma·z·cos²beta - u)·tan(phi)) / (gamma·z·sin(beta)·cos(beta))</div>
+      <div class="form-grid">
+        <div class="form-section">
+          <div class="section-label">Geometria y Suelo</div>
+          <div class="field"><label>ANGULO TALUD — beta (grados)</label><input type="number" id="si-beta" placeholder="ej. 30" min="0" max="90" step="0.1"></div>
+          <div class="field"><label>PROFUNDIDAD FALLA — z (m)</label><input type="number" id="si-z" placeholder="ej. 2.0" min="0" step="0.01"></div>
+          <div class="field"><label>COHESION — c (kPa)</label><input type="number" id="si-c" placeholder="ej. 5" min="0" step="0.1"></div>
+          <div class="field"><label>ANGULO FRICCION — phi (grados)</label><input type="number" id="si-phi" placeholder="ej. 28" min="0" max="45" step="0.1"></div>
+        </div>
+        <div class="form-section">
+          <div class="section-label">Condicion Hidraulica</div>
+          <div class="field"><label>PESO UNITARIO SUELO — gamma (kN/m3)</label><input type="number" id="si-gamma" placeholder="ej. 18" min="0" step="0.1"></div>
+          <div class="field"><label>PESO UNITARIO AGUA — gammaw (kN/m3)</label><input type="number" id="si-gammaw" placeholder="ej. 9.81" min="0" step="0.01"></div>
+          <div class="field"><label>NIVEL FREATICO — hw (m)</label><input type="number" id="si-hw" placeholder="ej. 0" min="0" step="0.01"></div>
+        </div>
+      </div>
+      <div class="error-box" id="si-error"></div>
+      <button class="btn-calc" onclick="calcSInfinito()">→ Calcular FS (Talud Infinito)</button>
+      <div class="results-box" id="si-results">
+        <div class="main-results">
+          <div class="main-card"><div class="main-card-label">FS Talud Infinito</div><div class="main-card-value" id="si-fs" style="color:#6aa8d8">—</div><div class="main-card-unit" id="si-estado">—</div></div>
+          <div class="main-card"><div class="main-card-label">Presion de Poros u</div><div class="main-card-value" id="si-u" style="color:var(--accent2)">—</div><div class="main-card-unit">kPa</div></div>
+          <div class="main-card"><div class="main-card-label">Esfuerzo Normal Ef.</div><div class="main-card-value" id="si-sn" style="color:var(--accent3)">—</div><div class="main-card-unit">kPa</div></div>
+        </div>
+        <div class="chart-section"><div class="chart-title">// Diagrama Talud Infinito</div><svg id="si-svg" viewBox="0 0 580 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:220px;"></svg></div>
+        <button class="btn-reset" onclick="resetSInfinito()">← Nuevo calculo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showSTab(id) {
+  ['bishop','fellenius','infinito'].forEach(t=>{
+    document.getElementById('stab-'+t).style.display='none';
+    document.getElementById('stab-btn-'+t).classList.remove('active');
+  });
+  document.getElementById('stab-'+id).style.display='block';
+  document.getElementById('stab-btn-'+id).classList.add('active');
+}
+
+function showSErr2(id,msg){const el=document.getElementById(id);if(msg){el.textContent=msg;el.classList.add('visible');}else el.classList.remove('visible');}
+
+function getSEstado(fs){
+  if(fs>=1.5)return{text:'ESTABLE',color:'#6ab8a8'};
+  if(fs>=1.0)return{text:'MARGINAL',color:'#c8a96e'};
+  return{text:'INESTABLE',color:'#e07060'};
+}
+
+function dibujarTaludGC(svgId,H,beta,R,hw,FS,color){
+  const svg=document.getElementById(svgId);
+  const betaR=g2r(beta);
+  const scY=200/H, topX=H/Math.tan(betaR)*scY*0.8;
+  const bX=40,bY=250,Hpx=H*scY;
+  let html='';
+  html+=`<polygon points="${bX},${bY} ${bX+topX},${bY-Hpx} ${bX+topX+60},${bY-Hpx} ${bX+500},${bY}" fill="rgba(106,168,216,0.1)"/>`;
+  html+=`<line x1="${bX}" y1="${bY}" x2="${bX+topX}" y2="${bY-Hpx}" stroke="#6aa8d8" stroke-width="2.5"/>`;
+  html+=`<line x1="${bX}" y1="${bY}" x2="${bX+500}" y2="${bY}" stroke="#506070" stroke-width="1" stroke-dasharray="4,3"/>`;
+  html+=`<line x1="${bX+topX}" y1="${bY-Hpx}" x2="${bX+topX+80}" y2="${bY-Hpx}" stroke="#6aa8d8" stroke-width="2"/>`;
+  const cx=bX+topX*0.5,cy=bY-Hpx*0.3,Rpx=R*scY*0.7;
+  html+=`<circle cx="${cx}" cy="${cy}" r="${Rpx}" fill="none" stroke="${color}" stroke-width="2" stroke-dasharray="6,3" opacity="0.7"/>`;
+  if(hw>0){const hwY=bY-hw*scY;html+=`<line x1="${bX}" y1="${hwY}" x2="${bX+350}" y2="${hwY}" stroke="#6aa8d8" stroke-width="1.5" stroke-dasharray="8,4" opacity="0.6"/><text x="${bX+355}" y="${hwY+3}" fill="#6aa8d8" font-family="DM Mono" font-size="9">NF</text>`;}
+  html+=`<rect x="480" y="20" width="80" height="36" rx="3" fill="rgba(0,0,0,0.4)"/>`;
+  html+=`<text x="520" y="33" fill="#506070" font-family="DM Mono" font-size="9" text-anchor="middle">FS</text>`;
+  html+=`<text x="520" y="48" fill="${color}" font-family="Fraunces,serif" font-size="14" font-weight="900" text-anchor="middle">${FS.toFixed(2)}</text>`;
+  html+=`<text x="${bX+20}" y="${bY-8}" fill="#506070" font-family="DM Mono" font-size="9">${beta}deg</text>`;
+  svg.innerHTML=html;
+}
+
+function dibujarTaludInfGC(svgId,beta,z,hw,FS,color){
+  const svg=document.getElementById(svgId);
+  const betaR=g2r(beta);
+  const zpx=z*30;
+  const x1=50,y1=220,x2=530,y2=220-480*Math.tan(betaR)*0.3;
+  let html='';
+  html+=`<polygon points="${x1},${y1} ${x2},${y2} ${x2},${y2+zpx*0.6} ${x1},${y1+zpx*0.6}" fill="rgba(106,168,216,0.1)"/>`;
+  html+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#6aa8d8" stroke-width="2.5"/>`;
+  html+=`<line x1="${x1}" y1="${y1+zpx*0.5}" x2="${x2}" y2="${y2+zpx*0.5}" stroke="${color}" stroke-width="2" stroke-dasharray="8,4"/>`;
+  if(hw>0){const hwpx=hw*30;html+=`<line x1="${x1}" y1="${y1+hwpx*0.5}" x2="${x2}" y2="${y2+hwpx*0.5}" stroke="#6aa8d8" stroke-width="1.5" stroke-dasharray="6,3" opacity="0.6"/><text x="${x2+4}" y="${y2+hwpx*0.5+3}" fill="#6aa8d8" font-family="DM Mono" font-size="9">NF</text>`;}
+  html+=`<rect x="460" y="15" width="80" height="36" rx="3" fill="rgba(0,0,0,0.4)"/>`;
+  html+=`<text x="500" y="28" fill="#506070" font-family="DM Mono" font-size="9" text-anchor="middle">FS</text>`;
+  html+=`<text x="500" y="43" fill="${color}" font-family="Fraunces,serif" font-size="14" font-weight="900" text-anchor="middle">${FS.toFixed(2)}</text>`;
+  svg.innerHTML=html;
+}
+
+function calcSBishop(){
+  showSErr2('sb-error','');document.getElementById('sb-results').classList.remove('visible');
+  const H=gv('sb-H'),beta=gv('sb-beta'),R=gv('sb-R'),c=gv('sb-c')??0,phi=gv('sb-phi')??0,gamma=gv('sb-gamma'),n=gv('sb-n')??10,hw=gv('sb-hw')??0;
+  if(!H){showSErr2('sb-error','Ingresa H.');return;}
+  if(!beta){showSErr2('sb-error','Ingresa beta.');return;}
+  if(!R){showSErr2('sb-error','Ingresa R.');return;}
+  if(!gamma){showSErr2('sb-error','Ingresa gamma.');return;}
+  const r=g2r(phi),betaR=g2r(beta),nS=Math.round(n);
+  const xc=H/Math.tan(betaR)*0.5,thetaTotal=2*Math.asin(Math.min(xc/R,0.99)),dTheta=thetaTotal/nS;
+  let FS=1.5,sumMr=0,sumMa=0;
+  for(let iter=0;iter<50;iter++){
+    sumMr=0;sumMa=0;
+    for(let i=0;i<nS;i++){
+      const theta=-thetaTotal/2+(i+0.5)*dTheta,b=R*dTheta;
+      const hi=Math.max(0,R*Math.cos(theta)*0.5);
+      const Wi=gamma*hi*b,ui=Math.min(hw,hi)*9.81;
+      const ma=Math.cos(theta)+(Math.sin(theta)*Math.tan(r))/FS;
+      sumMr+=(c*b+(Wi*Math.cos(theta)-ui*b)*Math.tan(r))/ma;
+      sumMa+=Wi*Math.sin(theta);
+    }
+    const FSnew=sumMr/Math.max(sumMa,0.001);
+    if(Math.abs(FSnew-FS)<0.001){FS=FSnew;break;}
+    FS=FSnew;
+  }
+  const estado=getSEstado(FS);
+  document.getElementById('sb-fs').textContent=FS.toFixed(3);
+  document.getElementById('sb-fs').style.color=estado.color;
+  document.getElementById('sb-estado').textContent=estado.text;
+  document.getElementById('sb-Fr').textContent=sumMr.toFixed(1);
+  document.getElementById('sb-Fa').textContent=sumMa.toFixed(1);
+  dibujarTaludGC('sb-svg',H,beta,R,hw,FS,estado.color);
+  document.getElementById('sb-results').classList.add('visible');
+}
+function resetSBishop(){['sb-H','sb-beta','sb-R','sb-c','sb-phi','sb-gamma','sb-n','sb-hw'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('sb-results').classList.remove('visible');}
+
+function calcSFellenius(){
+  showSErr2('sf-error','');document.getElementById('sf-results').classList.remove('visible');
+  const H=gv('sf-H'),beta=gv('sf-beta'),R=gv('sf-R'),c=gv('sf-c')??0,phi=gv('sf-phi')??0,gamma=gv('sf-gamma'),n=gv('sf-n')??10,hw=gv('sf-hw')??0;
+  if(!H){showSErr2('sf-error','Ingresa H.');return;}
+  if(!beta){showSErr2('sf-error','Ingresa beta.');return;}
+  if(!R){showSErr2('sf-error','Ingresa R.');return;}
+  if(!gamma){showSErr2('sf-error','Ingresa gamma.');return;}
+  const r=g2r(phi),betaR=g2r(beta),nS=Math.round(n);
+  const xc=H/Math.tan(betaR)*0.5,thetaTotal=2*Math.asin(Math.min(xc/R,0.99)),dTheta=thetaTotal/nS;
+  let sumMr=0,sumMa=0;
+  for(let i=0;i<nS;i++){
+    const theta=-thetaTotal/2+(i+0.5)*dTheta,b=R*dTheta;
+    const hi=Math.max(0,R*Math.cos(theta)*0.5);
+    const Wi=gamma*hi*b,ui=Math.min(hw,hi)*9.81;
+    const Ni=Wi*Math.cos(theta)-ui*b;
+    const li=b/Math.max(Math.cos(theta),0.1);
+    sumMr+=(c*li+Ni*Math.tan(r))*R;
+    sumMa+=Wi*Math.sin(theta)*R;
+  }
+  const FS=sumMr/Math.max(sumMa,0.001);
+  const estado=getSEstado(FS);
+  document.getElementById('sf-fs').textContent=FS.toFixed(3);
+  document.getElementById('sf-fs').style.color=estado.color;
+  document.getElementById('sf-estado').textContent=estado.text;
+  document.getElementById('sf-Mr').textContent=sumMr.toFixed(1);
+  document.getElementById('sf-Ma').textContent=sumMa.toFixed(1);
+  dibujarTaludGC('sf-svg',H,beta,R,hw,FS,estado.color);
+  document.getElementById('sf-results').classList.add('visible');
+}
+function resetSFellenius(){['sf-H','sf-beta','sf-R','sf-c','sf-phi','sf-gamma','sf-n','sf-hw'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('sf-results').classList.remove('visible');}
+
+function calcSInfinito(){
+  showSErr2('si-error','');document.getElementById('si-results').classList.remove('visible');
+  const beta=gv('si-beta'),z=gv('si-z'),c=gv('si-c')??0,phi=gv('si-phi')??0,gamma=gv('si-gamma'),gammaw=gv('si-gammaw')??9.81,hw=gv('si-hw')??0;
+  if(!beta){showSErr2('si-error','Ingresa beta.');return;}
+  if(!z){showSErr2('si-error','Ingresa z.');return;}
+  if(!gamma){showSErr2('si-error','Ingresa gamma.');return;}
+  const r=g2r(phi),betaR=g2r(beta);
+  const u=gammaw*hw*Math.cos(betaR)*Math.cos(betaR);
+  const sn=gamma*z*Math.cos(betaR)*Math.cos(betaR)-u;
+  const tau_r=c+sn*Math.tan(r);
+  const tau_a=gamma*z*Math.sin(betaR)*Math.cos(betaR);
+  const FS=tau_r/Math.max(tau_a,0.001);
+  const estado=getSEstado(FS);
+  document.getElementById('si-fs').textContent=FS.toFixed(3);
+  document.getElementById('si-fs').style.color=estado.color;
+  document.getElementById('si-estado').textContent=estado.text;
+  document.getElementById('si-u').textContent=u.toFixed(2);
+  document.getElementById('si-sn').textContent=sn.toFixed(2);
+  dibujarTaludInfGC('si-svg',beta,z,hw,FS,estado.color);
+  document.getElementById('si-results').classList.add('visible');
+}
+function resetSInfinito(){['si-beta','si-z','si-c','si-phi','si-gamma','si-gammaw','si-hw'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('si-results').classList.remove('visible');}
 </script>
 </body>
 </html>
