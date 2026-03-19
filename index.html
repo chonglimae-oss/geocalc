@@ -40,13 +40,14 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba
 .home h1 em { font-style: italic; color: var(--accent); }
 .home p { font-size: 13px; color: var(--muted); line-height: 1.7; max-width: 480px; margin-bottom: 60px; }
 .tools-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
-.tools-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 48px; }
+.tools-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 16px; margin-bottom: 48px; }
 .tool-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 28px 24px; cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden; }
 .tool-card::before { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; transform: scaleX(0); transform-origin: left; transition: transform 0.3s; }
 .tool-card.sucs::before { background: var(--accent2); }
 .tool-card.carga::before { background: var(--accent); }
 .tool-card.consol::before { background: var(--accent3); }
 .tool-card.asent::before { background: #d87a6a; }
+.tool-card.muro::before { background: #b87ad8; }
 .tool-card:hover { border-color: rgba(168,200,64,0.2); transform: translateY(-4px); background: var(--surface2); }
 .tool-card:hover::before { transform: scaleX(1); }
 .tool-icon { font-size: 28px; margin-bottom: 16px; display: block; }
@@ -56,6 +57,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba
 .tool-card.carga .tool-name { color: var(--accent); }
 .tool-card.consol .tool-name { color: var(--accent3); }
 .tool-card.asent .tool-name { color: #d87a6a; }
+.tool-card.muro .tool-name { color: #b87ad8; }
 .tool-desc { font-size: 11px; color: var(--muted); line-height: 1.6; }
 .tool-arrow { position: absolute; top: 24px; right: 24px; color: var(--border); font-size: 16px; transition: all 0.2s; }
 .tool-card:hover .tool-arrow { color: var(--accent); transform: translate(2px,-2px); }
@@ -182,6 +184,7 @@ tr:hover td { background: var(--surface2); }
     <button class="nav-btn" onclick="showPage('carga')">Cap. Carga</button>
     <button class="nav-btn" onclick="showPage('consol')">Consolidación</button>
     <button class="nav-btn" onclick="showPage('asent')">Asentamientos</button>
+    <button class="nav-btn" onclick="showPage('muro')">Muros</button>
   </div>
 </nav>
 
@@ -221,9 +224,16 @@ tr:hover td { background: var(--surface2); }
         <div class="tool-name">Asentamientos</div>
         <div class="tool-desc">Elástico, consolidación primaria y secundaria. Verificación vs límite admisible.</div>
       </div>
+      <div class="tool-card muro" onclick="showPage('muro')">
+        <span class="tool-arrow">↗</span>
+        <span class="tool-icon">🏛️</span>
+        <div class="tool-number">HERRAMIENTA 05</div>
+        <div class="tool-name">Muros de Contención</div>
+        <div class="tool-desc">Rankine. Verificación de volteo, deslizamiento y excentricidad con diagrama.</div>
+      </div>
     </div>
     <div class="stats-grid">
-      <div class="stat-item"><div class="stat-value">4</div><div class="stat-label">HERRAMIENTAS ACTIVAS</div></div>
+      <div class="stat-item"><div class="stat-value">5</div><div class="stat-label">HERRAMIENTAS ACTIVAS</div></div>
       <div class="stat-item"><div class="stat-value">4</div><div class="stat-label">MÉTODOS DE CÁLCULO</div></div>
       <div class="stat-item"><div class="stat-value">∞</div><div class="stat-label">CÁLCULOS DISPONIBLES</div></div>
     </div>
@@ -538,7 +548,7 @@ function showPage(id) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
-  document.querySelectorAll('.nav-btn')[['home','sucs','carga','consol','asent'].indexOf(id)].classList.add('active');
+  document.querySelectorAll('.nav-btn')[['home','sucs','carga','consol','asent','muro'].indexOf(id)].classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -740,6 +750,219 @@ function calcATotal(){
   document.getElementById('at-results').classList.add('visible');
 }
 function resetATotal(){['at-se','at-sc','at-ss','at-lim'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('at-results').classList.remove('visible');}
+</script>
+<!-- MUROS -->
+<div class="page" id="page-muro">
+  <div class="tool-page">
+    <div class="page-header">
+      <div><div style="font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;">// HERRAMIENTA 05</div><h2 style="color:#b87ad8">Muros de<br>Contencion</h2></div>
+      <button class="back-btn" onclick="showPage('home')">← Inicio</button>
+    </div>
+    <div class="divider"></div>
+    <div style="background:rgba(184,122,216,0.05);border:1px solid rgba(184,122,216,0.15);border-radius:4px;padding:14px 18px;margin-bottom:16px;font-size:12px;color:var(--muted);line-height:1.7;"><strong style="color:#b87ad8">Metodo de Rankine</strong> — Presiones activas y pasivas. Verifica volteo (FS>=2.0), deslizamiento (FS>=1.5) y excentricidad (e<=B/6).</div>
+
+    <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">// TIPO DE MURO</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
+      <div id="mt-gravedad" style="background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:12px;cursor:pointer;text-align:center;transition:all 0.2s;font-family:'DM Mono',monospace;" onclick="setMTipo('gravedad')">
+        <div style="font-size:20px;margin-bottom:4px;">🧱</div><div style="font-size:10px;color:var(--muted);letter-spacing:1px;">GRAVEDAD</div>
+      </div>
+      <div id="mt-voladizo" style="background:#b87ad8;border:1px solid #b87ad8;border-radius:3px;padding:12px;cursor:pointer;text-align:center;transition:all 0.2s;font-family:'DM Mono',monospace;" onclick="setMTipo('voladizo')">
+        <div style="font-size:20px;margin-bottom:4px;">🏛️</div><div style="font-size:10px;color:#0a0810;letter-spacing:1px;">VOLADIZO</div>
+      </div>
+      <div id="mt-contrafuerte" style="background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:12px;cursor:pointer;text-align:center;transition:all 0.2s;font-family:'DM Mono',monospace;" onclick="setMTipo('contrafuerte')">
+        <div style="font-size:20px;margin-bottom:4px;">🔩</div><div style="font-size:10px;color:var(--muted);letter-spacing:1px;">CONTRAFUERTE</div>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-section">
+        <div class="section-label">Geometria</div>
+        <div class="field"><label>ALTURA — H (m)</label><input type="number" id="mw-H" placeholder="ej. 4.0" min="0" step="0.01"></div>
+        <div class="field"><label>BASE — B (m)</label><input type="number" id="mw-B" placeholder="ej. 2.8" min="0" step="0.01"></div>
+        <div class="field"><label>ANCHO CORONA — b (m)</label><input type="number" id="mw-b" placeholder="ej. 0.40" min="0" step="0.01"></div>
+        <div class="field"><label>ESPESOR BASE — t (m)</label><input type="number" id="mw-t" placeholder="ej. 0.50" min="0" step="0.01"></div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Suelo Retenido</div>
+        <div class="field"><label>ANGULO FRICCION — phi (grados)</label><input type="number" id="mw-phi" placeholder="ej. 30" min="0" max="45" step="0.1"></div>
+        <div class="field"><label>COHESION — c (kPa)</label><input type="number" id="mw-c" placeholder="ej. 0" min="0" step="0.1"></div>
+        <div class="field"><label>PESO UNITARIO RELLENO — gr (kN/m3)</label><input type="number" id="mw-gr" placeholder="ej. 18" min="0" step="0.1"></div>
+        <div class="field"><label>SOBRECARGA — q (kPa)</label><input type="number" id="mw-q" placeholder="ej. 10" min="0" step="0.1"></div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Muro y Fundacion</div>
+        <div class="field"><label>PESO UNITARIO MURO — gm (kN/m3)</label><input type="number" id="mw-gm" placeholder="ej. 24" min="0" step="0.1"></div>
+        <div class="field"><label>PHI FUNDACION (grados)</label><input type="number" id="mw-phif" placeholder="ej. 30" min="0" max="45" step="0.1"></div>
+        <div class="field"><label>COHESION FUNDACION — cf (kPa)</label><input type="number" id="mw-cf" placeholder="ej. 0" min="0" step="0.1"></div>
+        <div class="field"><label>PROF. DESPLANTE — Df (m)</label><input type="number" id="mw-Df" placeholder="ej. 0.9" min="0" step="0.01"></div>
+      </div>
+    </div>
+
+    <div class="error-box" id="mw-error"></div>
+    <button class="btn-calc" onclick="calcMuroGC()">→ Verificar Estabilidad del Muro</button>
+
+    <div class="results-box" id="mw-results">
+      <div class="summary-card">
+        <h3>// Coeficientes Rankine y Empujes</h3>
+        <div class="summary-grid">
+          <div><div class="summary-label">Ka</div><div class="summary-value" id="mw-Ka" style="color:#b87ad8">—</div></div>
+          <div><div class="summary-label">Kp</div><div class="summary-value" id="mw-Kp" style="color:#b87ad8">—</div></div>
+          <div><div class="summary-label">Pa (kN/m)</div><div class="summary-value" id="mw-Pa" style="color:var(--accent2)">—</div></div>
+          <div><div class="summary-label">W total (kN/m)</div><div class="summary-value" id="mw-W" style="color:var(--accent3)">—</div></div>
+        </div>
+      </div>
+
+      <div class="result-grid">
+        <div class="result-card">
+          <div class="result-card-header"><div class="result-method" style="color:#b87ad8">Volteo</div><div class="result-tag">FS >= 2.0</div></div>
+          <div class="result-card-body">
+            <div class="result-qu" id="mw-fsv" style="color:#b87ad8">—</div>
+            <div class="result-unit">Factor de Seguridad</div>
+            <div class="result-qadm"><div class="result-qadm-label">Estado</div><div class="result-qadm-value" id="mw-fsv-ok">—</div></div>
+          </div>
+        </div>
+        <div class="result-card">
+          <div class="result-card-header"><div class="result-method" style="color:#b87ad8">Deslizamiento</div><div class="result-tag">FS >= 1.5</div></div>
+          <div class="result-card-body">
+            <div class="result-qu" id="mw-fsd" style="color:#b87ad8">—</div>
+            <div class="result-unit">Factor de Seguridad</div>
+            <div class="result-qadm"><div class="result-qadm-label">Estado</div><div class="result-qadm-value" id="mw-fsd-ok">—</div></div>
+          </div>
+        </div>
+        <div class="result-card">
+          <div class="result-card-header"><div class="result-method" style="color:#b87ad8">Excentricidad</div><div class="result-tag">e &lt;= B/6</div></div>
+          <div class="result-card-body">
+            <div class="result-qu" id="mw-e" style="color:#b87ad8">—</div>
+            <div class="result-unit">metros</div>
+            <div class="result-qadm"><div class="result-qadm-label">Limite B/6</div><div class="result-qadm-value" id="mw-B6">—</div></div>
+          </div>
+        </div>
+        <div class="result-card">
+          <div class="result-card-header"><div class="result-method" style="color:#b87ad8">Presion Base</div><div class="result-tag">kPa</div></div>
+          <div class="result-card-body">
+            <div class="result-qu" id="mw-qmax" style="color:#b87ad8">—</div>
+            <div class="result-unit">q_max (puntera)</div>
+            <div class="result-qadm"><div class="result-qadm-label">q_min (talon)</div><div class="result-qadm-value" id="mw-qmin">—</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-section">
+        <div class="chart-title">// Diagrama del Muro</div>
+        <svg id="mw-svg" viewBox="0 0 600 380" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:300px;"></svg>
+      </div>
+
+      <button class="btn-reset" onclick="resetMuroGC()">← Nuevo calculo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let tipoMuroGC = 'voladizo';
+function setMTipo(t) {
+  tipoMuroGC = t;
+  ['gravedad','voladizo','contrafuerte'].forEach(x => {
+    const el = document.getElementById('mt-'+x);
+    if(x===t){ el.style.background='#b87ad8'; el.style.borderColor='#b87ad8'; el.querySelector('div:last-child').style.color='#0a0810'; }
+    else { el.style.background='var(--surface)'; el.style.borderColor='var(--border)'; el.querySelector('div:last-child').style.color='var(--muted)'; }
+  });
+}
+
+function showMwErr(msg){ const el=document.getElementById('mw-error'); if(msg){el.textContent=msg;el.classList.add('visible');}else el.classList.remove('visible'); }
+
+function calcMuroGC() {
+  showMwErr('');
+  document.getElementById('mw-results').classList.remove('visible');
+  const H=gv('mw-H'),B=gv('mw-B'),b=gv('mw-b'),t=gv('mw-t');
+  const phi=gv('mw-phi'),c=gv('mw-c')??0,gr=gv('mw-gr'),q=gv('mw-q')??0;
+  const gm=gv('mw-gm'),phif=gv('mw-phif'),cf=gv('mw-cf')??0,Df=gv('mw-Df')??0;
+  if(!H){showMwErr('Ingresa H.');return;}
+  if(!B){showMwErr('Ingresa B.');return;}
+  if(!b){showMwErr('Ingresa b.');return;}
+  if(!t){showMwErr('Ingresa t.');return;}
+  if(phi===null){showMwErr('Ingresa phi.');return;}
+  if(!gr){showMwErr('Ingresa gr.');return;}
+  if(!gm){showMwErr('Ingresa gm.');return;}
+  if(phif===null){showMwErr('Ingresa phi fundacion.');return;}
+
+  const r=g2r(phi);
+  const Ka=Math.pow(Math.tan(Math.PI/4-r/2),2);
+  const Kp=Math.pow(Math.tan(Math.PI/4+r/2),2);
+  const Pa_q=Ka*q*H, Pa_tri=0.5*Ka*gr*H*H, Pa=Pa_q+Pa_tri;
+  const ya_tri=H/3, ya_q=H/2, ya=(Pa_tri*ya_tri+Pa_q*ya_q)/Pa;
+  const Pp=0.5*Kp*gr*Df*Df+2*cf*Df*Math.sqrt(Kp);
+  const H_stem=H-t;
+  const A_stem=((b+(B*0.4))/2)*H_stem;
+  const W_stem=gm*A_stem, W_base=gm*B*t;
+  const W_rell=gr*(B-B*0.4-b)*H_stem;
+  const W=W_stem+W_base+W_rell;
+  const x_base=B/2;
+  const Me=W_stem*(B*0.6)+W_base*x_base+W_rell*(B*0.8)+Pp*Df/3;
+  const Mv=Pa*ya;
+  const FSv=Me/Mv;
+  const Fr=W*Math.tan(g2r(phif))+cf*B+Pp;
+  const FSd=Fr/Pa;
+  const xbar=(Me-Mv)/W;
+  const e=Math.abs(B/2-xbar);
+  const B6=B/6;
+  const qmax=(W/B)*(1+6*e/B);
+  const qmin=(W/B)*(1-6*e/B);
+
+  document.getElementById('mw-Ka').textContent=Ka.toFixed(3);
+  document.getElementById('mw-Kp').textContent=Kp.toFixed(3);
+  document.getElementById('mw-Pa').textContent=Pa.toFixed(2);
+  document.getElementById('mw-W').textContent=W.toFixed(2);
+  document.getElementById('mw-fsv').textContent=FSv.toFixed(2);
+  const okv=FSv>=2.0;
+  document.getElementById('mw-fsv-ok').textContent=okv?'CUMPLE':'FALLA';
+  document.getElementById('mw-fsv-ok').style.color=okv?'#6ab8a8':'#e07060';
+  document.getElementById('mw-fsd').textContent=FSd.toFixed(2);
+  const okd=FSd>=1.5;
+  document.getElementById('mw-fsd-ok').textContent=okd?'CUMPLE':'FALLA';
+  document.getElementById('mw-fsd-ok').style.color=okd?'#6ab8a8':'#e07060';
+  document.getElementById('mw-e').textContent=e.toFixed(3)+' m';
+  document.getElementById('mw-B6').textContent=B6.toFixed(3)+' m';
+  document.getElementById('mw-qmax').textContent=qmax.toFixed(2)+' kPa';
+  document.getElementById('mw-qmin').textContent=qmin.toFixed(2)+' kPa';
+
+  // Diagrama
+  dibujarMuroGC(H,B,b,t,Pa,ya,Df,qmax,qmin);
+  document.getElementById('mw-results').classList.add('visible');
+}
+
+function dibujarMuroGC(H,B,b,t,Pa,ya,Df,qmax,qmin) {
+  const svg=document.getElementById('mw-svg');
+  const margin={left:60,right:100,top:30,bottom:50};
+  const dW=440,dH=300;
+  const scX=dW*0.45/B, scY=dH/(H+0.5);
+  const bX=margin.left, gY=margin.top+dH, tpY=gY-t*scY, topY=gY-H*scY;
+  const Bpx=B*scX, bpx=b*scX, tpx=t*scY, stW=B*0.4*scX;
+  let html='';
+  html+=`<rect x="${bX+stW}" y="${topY}" width="${Bpx-stW}" height="${H*scY-tpx}" fill="rgba(184,122,216,0.08)"/>`;
+  html+=`<rect x="${bX}" y="${tpY}" width="${Bpx}" height="${tpx}" fill="rgba(184,122,216,0.25)" stroke="#b87ad8" stroke-width="1.5"/>`;
+  html+=`<rect x="${bX+stW-bpx*0.3}" y="${topY}" width="${bpx+stW*0.3}" height="${H*scY-tpx}" fill="rgba(184,122,216,0.25)" stroke="#b87ad8" stroke-width="1.5"/>`;
+  html+=`<line x1="${bX-10}" y1="${gY}" x2="${bX+dW}" y2="${gY}" stroke="#6a7058" stroke-width="1" stroke-dasharray="4,3"/>`;
+  const aX=bX+stW-bpx*0.3, aY=topY+(H-t)*scY*(1-ya/H);
+  const aLen=Math.min(70,Pa*0.6);
+  html+=`<defs><marker id="aw2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#c8a96e"/></marker></defs>`;
+  html+=`<line x1="${aX-aLen}" y1="${aY}" x2="${aX}" y2="${aY}" stroke="#c8a96e" stroke-width="2" marker-end="url(#aw2)"/>`;
+  html+=`<text x="${aX-aLen-4}" y="${aY-4}" fill="#c8a96e" font-family="DM Mono" font-size="9" text-anchor="end">Pa=${Pa.toFixed(1)}</text>`;
+  const qScale=0.4, qmxPx=Math.min(qmax*qScale,70), qmnPx=Math.max(Math.abs(qmin)*qScale,2);
+  html+=`<rect x="${bX}" y="${gY+4}" width="${qmxPx}" height="7" fill="rgba(106,184,168,0.5)" stroke="#6ab8a8" stroke-width="1"/>`;
+  html+=`<text x="${bX}" y="${gY+22}" fill="#6ab8a8" font-family="DM Mono" font-size="9">${qmax.toFixed(0)}kPa</text>`;
+  html+=`<text x="${bX+Bpx}" y="${gY+22}" fill="#6ab8a8" font-family="DM Mono" font-size="9" text-anchor="end">${qmin.toFixed(0)}kPa</text>`;
+  html+=`<line x1="${bX-12}" y1="${topY}" x2="${bX-12}" y2="${gY}" stroke="#6a7058" stroke-width="1"/>`;
+  html+=`<text x="${bX-14}" y="${topY+(gY-topY)/2}" fill="#6a7058" font-family="DM Mono" font-size="9" text-anchor="middle" transform="rotate(-90,${bX-14},${topY+(gY-topY)/2})">H=${H}m</text>`;
+  html+=`<line x1="${bX}" y1="${gY+32}" x2="${bX+Bpx}" y2="${gY+32}" stroke="#6a7058" stroke-width="1"/>`;
+  html+=`<text x="${bX+Bpx/2}" y="${gY+44}" fill="#6a7058" font-family="DM Mono" font-size="9" text-anchor="middle">B=${B}m</text>`;
+  svg.innerHTML=html;
+}
+
+function resetMuroGC() {
+  ['mw-H','mw-B','mw-b','mw-t','mw-phi','mw-c','mw-gr','mw-q','mw-gm','mw-phif','mw-cf','mw-Df'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('mw-results').classList.remove('visible');
+  showMwErr('');
+}
 </script>
 </body>
 </html>
