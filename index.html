@@ -40,7 +40,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba
 .home h1 em { font-style: italic; color: var(--accent); }
 .home p { font-size: 13px; color: var(--muted); line-height: 1.7; max-width: 480px; margin-bottom: 60px; }
 .tools-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
-.tools-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 48px; }
+.tools-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 48px; }
 .tool-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 28px 24px; cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden; }
 .tool-card::before { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; transform: scaleX(0); transform-origin: left; transition: transform 0.3s; }
 .tool-card.sucs::before { background: var(--accent2); }
@@ -49,6 +49,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba
 .tool-card.asent::before { background: #d87a6a; }
 .tool-card.muro::before { background: #b87ad8; }
 .tool-card.talud::before { background: #6aa8d8; }
+.tool-card.compact::before { background: #c8d840; }
 .tool-card:hover { border-color: rgba(168,200,64,0.2); transform: translateY(-4px); background: var(--surface2); }
 .tool-card:hover::before { transform: scaleX(1); }
 .tool-icon { font-size: 28px; margin-bottom: 16px; display: block; }
@@ -60,6 +61,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba
 .tool-card.asent .tool-name { color: #d87a6a; }
 .tool-card.muro .tool-name { color: #b87ad8; }
 .tool-card.talud .tool-name { color: #6aa8d8; }
+.tool-card.compact .tool-name { color: #c8d840; }
 .tool-desc { font-size: 11px; color: var(--muted); line-height: 1.6; }
 .tool-arrow { position: absolute; top: 24px; right: 24px; color: var(--border); font-size: 16px; transition: all 0.2s; }
 .tool-card:hover .tool-arrow { color: var(--accent); transform: translate(2px,-2px); }
@@ -188,6 +190,7 @@ tr:hover td { background: var(--surface2); }
     <button class="nav-btn" onclick="showPage('asent')">Asentamientos</button>
     <button class="nav-btn" onclick="showPage('muro')">Muros</button>
     <button class="nav-btn" onclick="showPage('talud')">Taludes</button>
+    <button class="nav-btn" onclick="showPage('compact')">Compactacion</button>
   </div>
 </nav>
 
@@ -241,9 +244,16 @@ tr:hover td { background: var(--surface2); }
         <div class="tool-name">Análisis de Taludes</div>
         <div class="tool-desc">Bishop Simplificado, Fellenius y Talud Infinito. Factor de seguridad al deslizamiento.</div>
       </div>
+      <div class="tool-card compact" onclick="showPage('compact')">
+        <span class="tool-arrow">↗</span>
+        <span class="tool-icon">🔨</span>
+        <div class="tool-number">HERRAMIENTA 07</div>
+        <div class="tool-name">Compactación</div>
+        <div class="tool-desc">Curva Proctor, densidad máxima, humedad óptima y control de campo.</div>
+      </div>
     </div>
     <div class="stats-grid">
-      <div class="stat-item"><div class="stat-value">6</div><div class="stat-label">HERRAMIENTAS ACTIVAS</div></div>
+      <div class="stat-item"><div class="stat-value">7</div><div class="stat-label">HERRAMIENTAS ACTIVAS</div></div>
       <div class="stat-item"><div class="stat-value">4</div><div class="stat-label">MÉTODOS DE CÁLCULO</div></div>
       <div class="stat-item"><div class="stat-value">∞</div><div class="stat-label">CÁLCULOS DISPONIBLES</div></div>
     </div>
@@ -558,7 +568,7 @@ function showPage(id) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
-  document.querySelectorAll('.nav-btn')[['home','sucs','carga','consol','asent','muro','talud'].indexOf(id)].classList.add('active');
+  document.querySelectorAll('.nav-btn')[['home','sucs','carga','consol','asent','muro','talud','compact'].indexOf(id)].classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -1236,5 +1246,25 @@ function calcSInfinito(){
 }
 function resetSInfinito(){['si-beta','si-z','si-c','si-phi','si-gamma','si-gammaw','si-hw'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('si-results').classList.remove('visible');}
 </script>
+
+<!-- COMPACTACION -->
+<div class="page" id="page-compact">
+  <div class="tool-page">
+    <div class="page-header">
+      <div><div style="font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;">// HERRAMIENTA 07</div><h2 style="color:#c8d840">Compac<br>tacion</h2></div>
+      <button class="back-btn" onclick="showPage('home')">&#8592; Inicio</button>
+    </div>
+    <div class="divider"></div>
+    <div style="background:rgba(200,216,64,0.05);border:1px solid rgba(200,216,64,0.2);border-radius:4px;padding:32px 24px;text-align:center;">
+      <div style="font-size:32px;margin-bottom:16px;">🔨</div>
+      <div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:#c8d840;margin-bottom:12px;">Herramienta de Compactacion</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:24px;">
+        Curva Proctor · Control de Campo · Linea de Saturacion<br>
+        Densidad maxima seca · Humedad optima · Grado de compactacion
+      </div>
+      <a href="compactacion.html" style="display:inline-block;background:#c8d840;color:var(--dark);padding:14px 32px;border-radius:3px;font-family:'Fraunces',serif;font-size:16px;font-weight:700;text-decoration:none;">&#8594; Abrir Herramienta</a>
+    </div>
+  </div>
+</div>
 </body>
 </html>
