@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presiones de Tierra — GeoCalc</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,700;0,900;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f8f9fa;
+  --surface: #ffffff;
+  --surface2: #f0f2f5;
+  --border: #d0d5dd;
+  --accent: #8b5e1a;
+  --accent2: #1a6b5e;
+  --accent3: #1a4a8a;
+  --text: #1a1a2e;
+  --muted: #4a5568;
+  --dark: #1a1a2e;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; }
+body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 60% 40% at 30% 20%, rgba(139,94,26,0.04) 0%, transparent 60%), radial-gradient(ellipse 50% 50% at 70% 80%, rgba(26,74,138,0.03) 0%, transparent 60%); pointer-events: none; z-index: 0; }
+
+.container { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
+.header { margin-bottom: 40px; animation: fadeIn 0.7s ease both; }
+.tag { display: inline-block; background: rgba(139,94,26,0.08); color: var(--accent); border: 2px solid rgba(139,94,26,0.25); font-size: 12px; letter-spacing: 2px; padding: 8px 16px; border-radius: 100px; margin-bottom: 16px; font-weight: 700; }
+h1 { font-family: 'Fraunces', serif; font-size: clamp(2rem,6vw,3.5rem); font-weight: 900; line-height: 1; letter-spacing: -2px; margin-bottom: 12px; color: var(--dark); }
+h1 span { color: var(--accent); font-style: italic; }
+.subtitle { font-size: 14px; color: var(--muted); letter-spacing: 0.5px; line-height: 1.6; font-weight: 500; }
+.divider { height: 1px; background: linear-gradient(90deg, var(--border), transparent); margin: 28px 0; }
+
+.tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--surface); border: 2px solid var(--border); border-radius: 10px; padding: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.tab-btn { flex: 1; background: none; border: none; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 1px; padding: 12px 8px; border-radius: 6px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; text-align: center; font-weight: 600; }
+.tab-btn:hover { color: var(--text); background: var(--surface2); }
+.tab-btn.active { background: var(--accent); color: #fff; font-weight: 700; }
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.4s ease both; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; background: var(--surface); border: 2px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 18px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.form-grid-2 { grid-template-columns: 1fr 1fr; }
+.form-section { padding: 22px; border-right: 1px solid var(--border); }
+.form-section:last-child { border-right: none; }
+.section-label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.field { margin-bottom: 12px; }
+.field:last-child { margin-bottom: 0; }
+label { display: block; font-size: 12px; color: var(--dark); letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600; }
+input[type="number"], select { width: 100%; background: var(--bg); border: 2px solid var(--border); border-radius: 6px; padding: 10px 14px; font-family: 'DM Mono', monospace; font-size: 14px; color: var(--dark); font-weight: 500; transition: border-color 0.2s; outline: none; -moz-appearance: textfield; }
+input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139,94,26,0.1); }
+input::placeholder { color: var(--border); }
+select option { background: var(--surface); }
+
+.btn-calc { width: 100%; background: var(--accent); color: #fff; border: none; padding: 18px; font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; cursor: pointer; border-radius: 8px; transition: all 0.2s; margin-bottom: 20px; }
+.btn-calc:hover { background: #6b4010; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(139,94,26,0.3); }
+.error-box { display: none; background: #fff5f5; border: 2px solid #fca5a5; border-radius: 6px; padding: 14px 18px; font-size: 13px; color: #991b1b; margin-bottom: 14px; font-weight: 500; }
+.error-box.visible { display: block; }
+.results-box { display: none; }
+.results-box.visible { display: block; animation: slideUp 0.4s cubic-bezier(0.4,0,0.2,1) both; }
+
+.res-main { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 16px; }
+.res-card { background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.res-label { font-size: 11px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; font-weight: 700; }
+.res-value { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+.res-unit { font-size: 12px; color: var(--muted); letter-spacing: 1px; font-weight: 600; }
+
+.summary-card { background: var(--surface2); border: 2px solid var(--border); border-radius: 8px; padding: 20px 24px; margin-bottom: 14px; }
+.summary-card h3 { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; font-weight: 700; }
+.summary-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+.s-label { font-size: 11px; color: var(--muted); letter-spacing: 1px; margin-bottom: 4px; font-weight: 600; }
+.s-value { font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 700; color: var(--dark); }
+
+.diagram-section { background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 22px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.diagram-title { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; font-weight: 700; }
+
+.info-box { background: rgba(139,94,26,0.05); border: 2px solid rgba(139,94,26,0.2); border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; font-size: 13px; color: var(--muted); line-height: 1.7; font-weight: 500; }
+.info-box strong { color: var(--accent); }
+
+.btn-reset { background: none; border: 2px solid var(--border); color: var(--muted); padding: 10px 22px; font-family: 'DM Mono', monospace; font-size: 13px; letter-spacing: 1px; cursor: pointer; border-radius: 6px; transition: all 0.2s; margin-top: 4px; font-weight: 600; }
+.btn-reset:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Tabla de presiones */
+.pressure-table { background: var(--surface); border: 2px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.pt-header { padding: 14px 18px; border-bottom: 2px solid var(--border); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); font-weight: 700; background: var(--surface2); }
+table { width: 100%; border-collapse: collapse; }
+th { padding: 10px 16px; text-align: left; font-size: 11px; letter-spacing: 2px; color: var(--dark); background: var(--surface2); border-bottom: 2px solid var(--border); text-transform: uppercase; font-weight: 700; }
+td { padding: 10px 16px; font-size: 13px; border-bottom: 1px solid var(--border); color: var(--dark); font-weight: 500; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface2); }
+
+@keyframes fadeIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+@media (max-width:640px) {
+  .form-grid, .form-grid-2 { grid-template-columns: 1fr; }
+  .form-section { border-right: none; border-bottom: 1px solid var(--border); }
+  .res-main { grid-template-columns: 1fr; }
+  .summary-grid { grid-template-columns: repeat(2,1fr); }
+  .tabs { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="tag">DESAFIO 12 · PRESIONES DE TIERRA</div>
+    <h1>Presiones<br>de <span>Tierra</span></h1>
+    <p class="subtitle">// Rankine · Coulomb — Presiones Activas, Pasivas y en Reposo</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showETab('rankine')">① Rankine</button>
+    <button class="tab-btn" onclick="showETab('coulomb')">② Coulomb</button>
+    <button class="tab-btn" onclick="showETab('reposo')">③ En Reposo</button>
+  </div>
+
+  <!-- TAB 1: RANKINE -->
+  <div class="tab-content active" id="etab-rankine">
+    <div class="info-box">
+      <strong>Teoria de Rankine</strong> — Supone muro liso (sin friccion muro-suelo) y relleno horizontal. Calcula presiones activas (Ka) y pasivas (Kp) para suelos con cohesion y friccion.
+      <br>Ka = tan²(45 - phi/2) · Kp = tan²(45 + phi/2)
+      <br>sigma_a = Ka·gamma·z - 2c·sqrt(Ka) · sigma_p = Kp·gamma·z + 2c·sqrt(Kp)
+    </div>
+    <div class="form-grid">
+      <div class="form-section">
+        <div class="section-label">Geometria</div>
+        <div class="field"><label>ALTURA DEL MURO — H (m)</label><input type="number" id="r-H" placeholder="ej. 5.0" min="0" step="0.1"></div>
+        <div class="field"><label>ANGULO RELLENO — beta (grados)</label><input type="number" id="r-beta" placeholder="ej. 0 (horizontal)" min="0" max="45" step="0.1"></div>
+        <div class="field"><label>NIVEL FREATICO — zw (m, 0=seco)</label><input type="number" id="r-zw" placeholder="ej. 0" min="0" step="0.1"></div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Suelo</div>
+        <div class="field"><label>ANGULO FRICCION — phi (grados)</label><input type="number" id="r-phi" placeholder="ej. 30" min="0" max="45" step="0.1"></div>
+        <div class="field"><label>COHESION — c (kPa)</label><input type="number" id="r-c" placeholder="ej. 0" min="0" step="0.1"></div>
+        <div class="field"><label>PESO UNITARIO — gamma (kN/m3)</label><input type="number" id="r-gamma" placeholder="ej. 18" min="0" step="0.1"></div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Opciones</div>
+        <div class="field"><label>SOBRECARGA — q (kPa)</label><input type="number" id="r-q" placeholder="ej. 10" min="0" step="0.1"></div>
+        <div class="field"><label>UNIDADES FUERZA</label>
+          <select id="r-uni">
+            <option value="kN">kN/m</option>
+            <option value="ton">t/m</option>
+          </select>
+        </div>
+        <div class="field" style="margin-top:8px;">
+          <div style="font-size:11px;color:var(--muted);line-height:1.7;">Rankine asume:<br>Muro liso (delta=0)<br>Relleno seco o saturado</div>
+        </div>
+      </div>
+    </div>
+    <div class="error-box" id="r-error"></div>
+    <button class="btn-calc" onclick="calcRankine()">→ Calcular Presiones (Rankine)</button>
+    <div class="results-box" id="r-results">
+      <div class="res-main">
+        <div class="res-card">
+          <div class="res-label">Empuje Activo Pa</div>
+          <div class="res-value" id="r-Pa" style="color:var(--accent)">—</div>
+          <div class="res-unit" id="r-uni-lbl">kN/m</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Empuje Pasivo Pp</div>
+          <div class="res-value" id="r-Pp" style="color:var(--accent2)">—</div>
+          <div class="res-unit" id="r-uni-lbl2">kN/m</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Ka / Kp</div>
+          <div class="res-value" id="r-KaKp" style="color:var(--accent3);font-size:1.3rem">—</div>
+          <div class="res-unit">coeficientes</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <h3>// Detalle de presiones</h3>
+        <div class="summary-grid">
+          <div><div class="s-label">Ka</div><div class="s-value" id="r-Ka">—</div></div>
+          <div><div class="s-label">Kp</div><div class="s-value" id="r-Kp">—</div></div>
+          <div><div class="s-label">sigma_a base</div><div class="s-value" id="r-sab">— kPa</div></div>
+          <div><div class="s-label">Altura tension zc</div><div class="s-value" id="r-zc">— m</div></div>
+        </div>
+      </div>
+      <div class="pressure-table">
+        <div class="pt-header">// Distribucion de presiones por capas</div>
+        <table>
+          <thead><tr><th>Profundidad (m)</th><th>sigma activa (kPa)</th><th>sigma pasiva (kPa)</th><th>Presion agua (kPa)</th></tr></thead>
+          <tbody id="r-tabla"></tbody>
+        </table>
+      </div>
+      <div class="diagram-section">
+        <div class="diagram-title">// Diagrama de Presiones</div>
+        <svg id="r-svg" viewBox="0 0 580 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:300px;"></svg>
+      </div>
+      <button class="btn-reset" onclick="resetRankine()">← Nuevo calculo</button>
+    </div>
+  </div>
+
+  <!-- TAB 2: COULOMB -->
+  <div class="tab-content" id="etab-coulomb">
+    <div class="info-box">
+      <strong>Teoria de Coulomb</strong> — Considera friccion entre el muro y el suelo (delta) y relleno inclinado (beta). Mas precisa que Rankine para muros rugosos. Solo calcula presion activa.
+      <br>Ka = sin²(phi+alpha) / [sin²(alpha)·sin(alpha-delta)·(1+sqrt(sin(phi+delta)·sin(phi-beta)/sin(alpha-delta)·sin(alpha+beta)))²]
+    </div>
+    <div class="form-grid">
+      <div class="form-section">
+        <div class="section-label">Geometria</div>
+        <div class="field"><label>ALTURA DEL MURO — H (m)</label><input type="number" id="co-H" placeholder="ej. 5.0" min="0" step="0.1"></div>
+        <div class="field"><label>ANGULO MURO — alpha (grados, 90=vertical)</label><input type="number" id="co-alpha" placeholder="ej. 90" min="60" max="120" step="0.1"></div>
+        <div class="field"><label>ANGULO RELLENO — beta (grados)</label><input type="number" id="co-beta" placeholder="ej. 0" min="0" max="45" step="0.1"></div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Suelo y Muro</div>
+        <div class="field"><label>ANGULO FRICCION SUELO — phi (grados)</label><input type="number" id="co-phi" placeholder="ej. 30" min="0" max="45" step="0.1"></div>
+        <div class="field"><label>ANGULO FRICCION MURO — delta (grados)</label><input type="number" id="co-delta" placeholder="ej. 20" min="0" max="45" step="0.1"></div>
+        <div class="field"><label>PESO UNITARIO — gamma (kN/m3)</label><input type="number" id="co-gamma" placeholder="ej. 18" min="0" step="0.1"></div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Carga</div>
+        <div class="field"><label>SOBRECARGA — q (kPa)</label><input type="number" id="co-q" placeholder="ej. 0" min="0" step="0.1"></div>
+        <div class="field"><label>UNIDADES</label>
+          <select id="co-uni">
+            <option value="kN">kN/m</option>
+            <option value="ton">t/m</option>
+          </select>
+        </div>
+        <div class="field" style="margin-top:8px;">
+          <div style="font-size:11px;color:var(--muted);line-height:1.7;">delta tipico:<br>Concreto: 2/3·phi<br>Acero: 1/2·phi<br>Madera: 1/3·phi</div>
+        </div>
+      </div>
+    </div>
+    <div class="error-box" id="co-error"></div>
+    <button class="btn-calc" onclick="calcCoulomb()">→ Calcular Presiones (Coulomb)</button>
+    <div class="results-box" id="co-results">
+      <div class="res-main">
+        <div class="res-card">
+          <div class="res-label">Ka Coulomb</div>
+          <div class="res-value" id="co-Ka" style="color:var(--accent)">—</div>
+          <div class="res-unit">adimensional</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Empuje Activo Pa</div>
+          <div class="res-value" id="co-Pa" style="color:var(--accent2)">—</div>
+          <div class="res-unit" id="co-uni-lbl">kN/m</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Comparacion Rankine</div>
+          <div class="res-value" id="co-comp" style="color:var(--accent3);font-size:1.3rem">—</div>
+          <div class="res-unit">Ka Rankine</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <h3>// Parametros</h3>
+        <div class="summary-grid">
+          <div><div class="s-label">Ka Coulomb</div><div class="s-value" id="co-Ka2">—</div></div>
+          <div><div class="s-label">sigma_a base</div><div class="s-value" id="co-sab">— kPa</div></div>
+          <div><div class="s-label">Pa horizontal</div><div class="s-value" id="co-Pah">— kN/m</div></div>
+          <div><div class="s-label">Pa vertical</div><div class="s-value" id="co-Pav">— kN/m</div></div>
+        </div>
+      </div>
+      <div class="diagram-section">
+        <div class="diagram-title">// Diagrama de Presion Activa (Coulomb)</div>
+        <svg id="co-svg" viewBox="0 0 580 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:280px;"></svg>
+      </div>
+      <button class="btn-reset" onclick="resetCoulomb()">← Nuevo calculo</button>
+    </div>
+  </div>
+
+  <!-- TAB 3: EN REPOSO -->
+  <div class="tab-content" id="etab-reposo">
+    <div class="info-box">
+      <strong>Presion en Reposo (K0)</strong> — Estado en que el suelo no tiene deformacion lateral. Se usa para estructuras rigidas (sotanos, tunelis). K0 = 1 - sin(phi) para suelos NC, o K0 = (1-sin(phi))·OCR^sin(phi) para suelos OC.
+    </div>
+    <div class="form-grid-2 form-grid">
+      <div class="form-section">
+        <div class="section-label">Suelo</div>
+        <div class="field"><label>ANGULO FRICCION — phi (grados)</label><input type="number" id="k0-phi" placeholder="ej. 30" min="0" max="45" step="0.1"></div>
+        <div class="field"><label>PESO UNITARIO — gamma (kN/m3)</label><input type="number" id="k0-gamma" placeholder="ej. 18" min="0" step="0.1"></div>
+        <div class="field"><label>COHESION — c (kPa)</label><input type="number" id="k0-c" placeholder="ej. 0" min="0" step="0.1"></div>
+        <div class="field"><label>ALTURA — H (m)</label><input type="number" id="k0-H" placeholder="ej. 5.0" min="0" step="0.1"></div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Condicion de Consolidacion</div>
+        <div class="field"><label>CONDICION DEL SUELO</label>
+          <select id="k0-cond">
+            <option value="NC">Normalmente Consolidado (NC)</option>
+            <option value="OC">Sobreconsolidado (OC)</option>
+          </select>
+        </div>
+        <div class="field"><label>RELACION DE SOBRECONS. — OCR (solo OC)</label><input type="number" id="k0-OCR" placeholder="ej. 3.0" min="1" step="0.1"></div>
+        <div class="field"><label>SOBRECARGA — q (kPa)</label><input type="number" id="k0-q" placeholder="ej. 0" min="0" step="0.1"></div>
+        <div class="field"><label>UNIDADES</label>
+          <select id="k0-uni">
+            <option value="kN">kN/m</option>
+            <option value="ton">t/m</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="error-box" id="k0-error"></div>
+    <button class="btn-calc" onclick="calcReposo()">→ Calcular Presion en Reposo</button>
+    <div class="results-box" id="k0-results">
+      <div class="res-main">
+        <div class="res-card">
+          <div class="res-label">K0</div>
+          <div class="res-value" id="k0-K0" style="color:var(--accent)">—</div>
+          <div class="res-unit">coeficiente reposo</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Empuje en Reposo P0</div>
+          <div class="res-value" id="k0-P0" style="color:var(--accent2)">—</div>
+          <div class="res-unit" id="k0-uni-lbl">kN/m</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Comparacion Ka/K0/Kp</div>
+          <div class="res-value" id="k0-comp" style="color:var(--accent3);font-size:1.1rem">—</div>
+          <div class="res-unit">Ka &lt; K0 &lt; Kp</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <h3>// Comparacion de coeficientes</h3>
+        <div class="summary-grid">
+          <div><div class="s-label">Ka (Rankine)</div><div class="s-value" id="k0-Ka">—</div></div>
+          <div><div class="s-label">K0</div><div class="s-value" id="k0-K02">—</div></div>
+          <div><div class="s-label">Kp (Rankine)</div><div class="s-value" id="k0-Kp">—</div></div>
+          <div><div class="s-label">sigma_0 base</div><div class="s-value" id="k0-s0b">— kPa</div></div>
+        </div>
+      </div>
+      <div class="diagram-section">
+        <div class="diagram-title">// Diagrama de Presion en Reposo</div>
+        <svg id="k0-svg" viewBox="0 0 580 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:280px;"></svg>
+      </div>
+      <button class="btn-reset" onclick="resetReposo()">← Nuevo calculo</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showETab(id) {
+  ['rankine','coulomb','reposo'].forEach(t => {
+    document.getElementById('etab-'+t).classList.remove('active');
+    document.getElementById('etab-'+t).style.display='none';
+  });
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('etab-'+id).classList.add('active');
+  document.getElementById('etab-'+id).style.display='block';
+  ['rankine','coulomb','reposo'].forEach((t,i) => { if(t===id) document.querySelectorAll('.tab-btn')[i].classList.add('active'); });
+}
+
+function gv(id){const v=parseFloat(document.getElementById(id).value);return isNaN(v)?null:v;}
+function showEErr(id,msg){const el=document.getElementById(id);if(msg){el.textContent=msg;el.classList.add('visible');}else el.classList.remove('visible');}
+function g2r(d){return d*Math.PI/180;}
+function fmtE(v,uni){return uni==='ton'?(v/9.81).toFixed(2)+'':v.toFixed(2)+''; }
+
+// ── RANKINE ──
+function calcRankine() {
+  showEErr('r-error','');document.getElementById('r-results').classList.remove('visible');
+  const H=gv('r-H'),phi=gv('r-phi'),c=gv('r-c')??0,gamma=gv('r-gamma');
+  const zw=gv('r-zw')??0,q=gv('r-q')??0,beta=gv('r-beta')??0;
+  const uni=document.getElementById('r-uni').value;
+  if(!H){showEErr('r-error','Ingresa H.');return;}
+  if(phi===null){showEErr('r-error','Ingresa phi.');return;}
+  if(!gamma){showEErr('r-error','Ingresa gamma.');return;}
+
+  const r=g2r(phi);
+  const Ka=Math.pow(Math.tan(Math.PI/4-r/2),2);
+  const Kp=Math.pow(Math.tan(Math.PI/4+r/2),2);
+  const gammaw=9.81;
+
+  // Altura de tension (zona donde sigma_a < 0)
+  const zc = c>0 ? 2*c/(gamma*Math.sqrt(Ka)) : 0;
+
+  // Presion activa en la base
+  const sigmav_base = gamma*H + q;
+  const sigma_a_base = Ka*sigmav_base - 2*c*Math.sqrt(Ka);
+  const sigma_p_base = Kp*gamma*H + 2*c*Math.sqrt(Kp);
+
+  // Empuje activo total (considerando zona de tension si c>0)
+  const H_eff = Math.max(H-zc, 0);
+  const Pa_tri = 0.5*Ka*gamma*H_eff*H_eff;
+  const Pa_q = Ka*q*H_eff;
+  const Pa_agua = zw>0 ? 0.5*gammaw*zw*zw : 0;
+  const Pa = Pa_tri + Pa_q + Pa_agua;
+
+  // Empuje pasivo total
+  const Pp = 0.5*Kp*gamma*H*H + 2*c*Math.sqrt(Kp)*H;
+
+  const lbl=uni==='ton'?'t/m':'kN/m';
+  const fmtF=(v)=>uni==='ton'?(v/9.81).toFixed(2):v.toFixed(2);
+
+  document.getElementById('r-Pa').textContent=fmtF(Pa);
+  document.getElementById('r-uni-lbl').textContent=lbl;
+  document.getElementById('r-Pp').textContent=fmtF(Pp);
+  document.getElementById('r-uni-lbl2').textContent=lbl;
+  document.getElementById('r-KaKp').textContent=Ka.toFixed(3)+' / '+Kp.toFixed(3);
+  document.getElementById('r-Ka').textContent=Ka.toFixed(4);
+  document.getElementById('r-Kp').textContent=Kp.toFixed(4);
+  document.getElementById('r-sab').textContent=sigma_a_base.toFixed(2)+' kPa';
+  document.getElementById('r-zc').textContent=zc.toFixed(2)+' m';
+
+  // Tabla
+  const depths=[0,H*0.25,H*0.5,H*0.75,H];
+  let html='';
+  depths.forEach(z=>{
+    const sv=gamma*z+q;
+    const sa=Math.max(Ka*sv-2*c*Math.sqrt(Ka),0);
+    const sp=Kp*gamma*z+2*c*Math.sqrt(Kp);
+    const sw=z<=zw?gammaw*z:0;
+    html+=`<tr><td>${z.toFixed(2)}</td><td style="color:var(--accent)">${sa.toFixed(2)}</td><td style="color:var(--accent2)">${sp.toFixed(2)}</td><td style="color:var(--accent3)">${sw.toFixed(2)}</td></tr>`;
+  });
+  document.getElementById('r-tabla').innerHTML=html;
+
+  dibujarPresiones('r-svg',H,Ka,Kp,gamma,c,q,zw,Pa,Pp,'#d8986a','#6ad8a8');
+  document.getElementById('r-results').classList.add('visible');
+}
+function resetRankine(){['r-H','r-phi','r-c','r-gamma','r-zw','r-q','r-beta'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('r-results').classList.remove('visible');}
+
+// ── COULOMB ──
+function calcCoulomb() {
+  showEErr('co-error','');document.getElementById('co-results').classList.remove('visible');
+  const H=gv('co-H'),alpha=gv('co-alpha')??90,beta=gv('co-beta')??0;
+  const phi=gv('co-phi'),delta=gv('co-delta')??0,gamma=gv('co-gamma');
+  const q=gv('co-q')??0;
+  const uni=document.getElementById('co-uni').value;
+  if(!H){showEErr('co-error','Ingresa H.');return;}
+  if(phi===null){showEErr('co-error','Ingresa phi.');return;}
+  if(!gamma){showEErr('co-error','Ingresa gamma.');return;}
+
+  const phiR=g2r(phi), deltaR=g2r(delta), alphaR=g2r(alpha), betaR=g2r(beta);
+
+  // Ka Coulomb
+  const sinPhiAlpha=Math.sin(phiR+alphaR);
+  const sinPhiDelta=Math.sin(phiR+deltaR);
+  const sinPhiBeta=Math.sin(phiR-betaR);
+  const sinAlphaDelta=Math.sin(alphaR-deltaR);
+  const sinAlphaBeta=Math.sin(alphaR+betaR);
+
+  const sqrtTerm=Math.sqrt((sinPhiDelta*sinPhiBeta)/(sinAlphaDelta*sinAlphaBeta));
+  const denominator=Math.sin(alphaR)*Math.sin(alphaR)*sinAlphaDelta*Math.pow(1+sqrtTerm,2);
+  const Ka=sinPhiAlpha*sinPhiAlpha/denominator;
+
+  // Empuje activo
+  const Pa=0.5*Ka*gamma*H*H + Ka*q*H;
+  const Pah=Pa*Math.cos(deltaR);
+  const Pav=Pa*Math.sin(deltaR);
+
+  // Ka Rankine para comparar
+  const r=g2r(phi);
+  const Ka_rank=Math.pow(Math.tan(Math.PI/4-r/2),2);
+
+  const lbl=uni==='ton'?'t/m':'kN/m';
+  const fmtF=(v)=>uni==='ton'?(v/9.81).toFixed(2):v.toFixed(2);
+
+  document.getElementById('co-Ka').textContent=Ka.toFixed(4);
+  document.getElementById('co-Pa').textContent=fmtF(Pa);
+  document.getElementById('co-uni-lbl').textContent=lbl;
+  document.getElementById('co-comp').textContent=Ka_rank.toFixed(4);
+  document.getElementById('co-Ka2').textContent=Ka.toFixed(4);
+  document.getElementById('co-sab').textContent=(Ka*gamma*H).toFixed(2)+' kPa';
+  document.getElementById('co-Pah').textContent=fmtF(Pah)+' '+lbl;
+  document.getElementById('co-Pav').textContent=fmtF(Pav)+' '+lbl;
+
+  dibujarCoulomb('co-svg',H,Ka,gamma,q,delta,'#d8986a');
+  document.getElementById('co-results').classList.add('visible');
+}
+function resetCoulomb(){['co-H','co-alpha','co-beta','co-phi','co-delta','co-gamma','co-q'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('co-results').classList.remove('visible');}
+
+// ── REPOSO ──
+function calcReposo() {
+  showEErr('k0-error','');document.getElementById('k0-results').classList.remove('visible');
+  const phi=gv('k0-phi'),gamma=gv('k0-gamma'),c=gv('k0-c')??0,H=gv('k0-H');
+  const OCR=gv('k0-OCR')??1,q=gv('k0-q')??0;
+  const cond=document.getElementById('k0-cond').value;
+  const uni=document.getElementById('k0-uni').value;
+  if(phi===null){showEErr('k0-error','Ingresa phi.');return;}
+  if(!gamma){showEErr('k0-error','Ingresa gamma.');return;}
+  if(!H){showEErr('k0-error','Ingresa H.');return;}
+
+  const r=g2r(phi);
+  let K0;
+  if(cond==='NC') K0=1-Math.sin(r);
+  else K0=(1-Math.sin(r))*Math.pow(OCR,Math.sin(r));
+
+  const Ka=Math.pow(Math.tan(Math.PI/4-r/2),2);
+  const Kp=Math.pow(Math.tan(Math.PI/4+r/2),2);
+
+  const sigma0_base=K0*(gamma*H+q);
+  const P0=0.5*K0*gamma*H*H+K0*q*H;
+
+  const lbl=uni==='ton'?'t/m':'kN/m';
+  const fmtF=(v)=>uni==='ton'?(v/9.81).toFixed(2):v.toFixed(2);
+
+  document.getElementById('k0-K0').textContent=K0.toFixed(4);
+  document.getElementById('k0-P0').textContent=fmtF(P0);
+  document.getElementById('k0-uni-lbl').textContent=lbl;
+  document.getElementById('k0-comp').textContent=Ka.toFixed(3)+' / '+K0.toFixed(3)+' / '+Kp.toFixed(3);
+  document.getElementById('k0-Ka').textContent=Ka.toFixed(4);
+  document.getElementById('k0-K02').textContent=K0.toFixed(4);
+  document.getElementById('k0-Kp').textContent=Kp.toFixed(4);
+  document.getElementById('k0-s0b').textContent=sigma0_base.toFixed(2)+' kPa';
+
+  dibujarReposo('k0-svg',H,K0,Ka,Kp,gamma,q,'#d8986a');
+  document.getElementById('k0-results').classList.add('visible');
+}
+function resetReposo(){['k0-phi','k0-gamma','k0-c','k0-H','k0-OCR','k0-q'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('k0-results').classList.remove('visible');}
+
+// ── DIAGRAMAS ──
+function dibujarPresiones(svgId,H,Ka,Kp,gamma,c,q,zw,Pa,Pp,colorA,colorP) {
+  const svg=document.getElementById(svgId);
+  const W=580,SH=340;
+  const margin={left:60,right:60,top:30,bottom:40};
+  const dH=SH-margin.top-margin.bottom;
+  const scY=dH/H;
+  const wallX=W/2, topY=margin.top, botY=margin.top+dH;
+  const gammaw=9.81;
+
+  let html='';
+  // Muro
+  html+=`<rect x="${wallX-8}" y="${topY}" width="16" height="${dH}" fill="rgba(216,152,106,0.3)" stroke="#d8986a" stroke-width="2"/>`;
+  // Suelo activo (izquierda)
+  html+=`<rect x="${margin.left}" y="${topY}" width="${wallX-8-margin.left}" height="${dH}" fill="rgba(216,152,106,0.06)" stroke="none"/>`;
+  // Suelo pasivo (derecha)
+  html+=`<rect x="${wallX+8}" y="${topY}" width="${W-margin.right-wallX-8}" height="${dH}" fill="rgba(106,216,168,0.06)" stroke="none"/>`;
+
+  // Presion activa (triangulo izquierda)
+  const sa_base=Math.max(Ka*gamma*H+Ka*q-2*c*Math.sqrt(Ka),0);
+  const scPa=Math.min(80/Math.max(sa_base,1),3);
+  const pa_base_px=sa_base*scPa;
+  html+=`<polygon points="${wallX-8},${topY} ${wallX-8},${botY} ${wallX-8-pa_base_px},${botY}" fill="${colorA}" opacity="0.3" stroke="${colorA}" stroke-width="1.5"/>`;
+  html+=`<text x="${wallX-8-pa_base_px-4}" y="${botY-4}" fill="${colorA}" font-family="DM Mono" font-size="9" text-anchor="end">Pa=${Pa.toFixed(1)}kN/m</text>`;
+
+  // Presion pasiva (triangulo derecha)
+  const sp_base=Kp*gamma*H+2*c*Math.sqrt(Kp);
+  const scPp=Math.min(80/Math.max(sp_base,1),3);
+  const pp_base_px=sp_base*scPp;
+  html+=`<polygon points="${wallX+8},${topY} ${wallX+8},${botY} ${wallX+8+pp_base_px},${botY}" fill="${colorP}" opacity="0.3" stroke="${colorP}" stroke-width="1.5"/>`;
+  html+=`<text x="${wallX+8+pp_base_px+4}" y="${botY-4}" fill="${colorP}" font-family="DM Mono" font-size="9">Pp=${Pp.toFixed(1)}kN/m</text>`;
+
+  // Nivel freatico
+  if(zw>0){const zwy=topY+zw*scY;html+=`<line x1="${margin.left}" y1="${zwy}" x2="${wallX-8}" y2="${zwy}" stroke="#6aa8d8" stroke-width="1.5" stroke-dasharray="6,3"/><text x="${margin.left}" y="${zwy-4}" fill="#6aa8d8" font-family="DM Mono" font-size="9">NF</text>`;}
+
+  // Cota H
+  html+=`<line x1="${margin.left-12}" y1="${topY}" x2="${margin.left-12}" y2="${botY}" stroke="#706050" stroke-width="1"/>`;
+  html+=`<text x="${margin.left-14}" y="${topY+dH/2}" fill="#706050" font-family="DM Mono" font-size="9" text-anchor="middle" transform="rotate(-90,${margin.left-14},${topY+dH/2})">H=${H}m</text>`;
+
+  // Labels
+  html+=`<text x="${wallX-40}" y="${topY-10}" fill="${colorA}" font-family="DM Mono" font-size="9" text-anchor="middle">ACTIVO</text>`;
+  html+=`<text x="${wallX+40}" y="${topY-10}" fill="${colorP}" font-family="DM Mono" font-size="9" text-anchor="middle">PASIVO</text>`;
+
+  svg.innerHTML=html;
+}
+
+function dibujarCoulomb(svgId,H,Ka,gamma,q,delta,color) {
+  const svg=document.getElementById(svgId);
+  const W=580,SH=320;
+  const margin={left:60,right:60,top:30,bottom:40};
+  const dH=SH-margin.top-margin.bottom;
+  const scY=dH/H;
+  const wallX=180, topY=margin.top, botY=margin.top+dH;
+  let html='';
+  html+=`<rect x="${wallX-8}" y="${topY}" width="16" height="${dH}" fill="rgba(216,152,106,0.3)" stroke="#d8986a" stroke-width="2"/>`;
+  html+=`<rect x="${margin.left}" y="${topY}" width="${wallX-8-margin.left}" height="${dH}" fill="rgba(216,152,106,0.06)"/>`;
+  const sa_base=Ka*gamma*H;
+  const scP=Math.min(120/Math.max(sa_base,1),4);
+  const pa_px=sa_base*scP;
+  html+=`<polygon points="${wallX-8},${topY} ${wallX-8},${botY} ${wallX-8-pa_px},${botY}" fill="${color}" opacity="0.3" stroke="${color}" stroke-width="1.5"/>`;
+  // Flecha del empuje inclinada
+  const Pa=0.5*Ka*gamma*H*H;
+  const arrowY=botY-dH/3;
+  const dR=g2r(delta);
+  const arrowLen=60;
+  const ax2=wallX+8+arrowLen*Math.cos(dR), ay2=arrowY-arrowLen*Math.sin(dR);
+  html+=`<defs><marker id="earrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="${color}"/></marker></defs>`;
+  html+=`<line x1="${wallX+8}" y1="${arrowY}" x2="${ax2}" y2="${ay2}" stroke="${color}" stroke-width="2" marker-end="url(#earrow)"/>`;
+  html+=`<text x="${ax2+4}" y="${ay2-4}" fill="${color}" font-family="DM Mono" font-size="9">Pa=${Pa.toFixed(1)}kN/m</text>`;
+  html+=`<text x="${ax2+4}" y="${ay2+10}" fill="${color}" font-family="DM Mono" font-size="9">delta=${delta}deg</text>`;
+  html+=`<line x1="${margin.left-12}" y1="${topY}" x2="${margin.left-12}" y2="${botY}" stroke="#706050" stroke-width="1"/>`;
+  html+=`<text x="${margin.left-14}" y="${topY+dH/2}" fill="#706050" font-family="DM Mono" font-size="9" text-anchor="middle" transform="rotate(-90,${margin.left-14},${topY+dH/2})">H=${H}m</text>`;
+  svg.innerHTML=html;
+}
+
+function dibujarReposo(svgId,H,K0,Ka,Kp,gamma,q,color) {
+  const svg=document.getElementById(svgId);
+  const W=580,SH=320;
+  const margin={left:60,right:60,top:30,bottom:40};
+  const dH=SH-margin.top-margin.bottom;
+  const wallX=W/2, topY=margin.top, botY=margin.top+dH;
+  let html='';
+  html+=`<rect x="${wallX-8}" y="${topY}" width="16" height="${dH}" fill="rgba(216,152,106,0.3)" stroke="#d8986a" stroke-width="2"/>`;
+  html+=`<rect x="${margin.left}" y="${topY}" width="${wallX-8-margin.left}" height="${dH}" fill="rgba(216,152,106,0.06)"/>`;
+
+  // Tres triangulos: Ka, K0, Kp
+  const s_Ka=(Ka*(gamma*H+q));
+  const s_K0=(K0*(gamma*H+q));
+  const s_Kp=(Kp*(gamma*H+q));
+  const scP=Math.min(100/Math.max(s_Kp,1),2);
+
+  html+=`<polygon points="${wallX-8},${topY} ${wallX-8},${botY} ${wallX-8-s_Kp*scP},${botY}" fill="rgba(106,216,168,0.15)" stroke="#6ad8a8" stroke-width="1" stroke-dasharray="4,2"/>`;
+  html+=`<polygon points="${wallX-8},${topY} ${wallX-8},${botY} ${wallX-8-s_K0*scP},${botY}" fill="${color}" opacity="0.25" stroke="${color}" stroke-width="2"/>`;
+  html+=`<polygon points="${wallX-8},${topY} ${wallX-8},${botY} ${wallX-8-s_Ka*scP},${botY}" fill="rgba(106,168,216,0.15)" stroke="#6aa8d8" stroke-width="1" stroke-dasharray="4,2"/>`;
+
+  html+=`<text x="${wallX-8-s_Ka*scP-4}" y="${botY+12}" fill="#6aa8d8" font-family="DM Mono" font-size="8" text-anchor="end">Ka</text>`;
+  html+=`<text x="${wallX-8-s_K0*scP-4}" y="${botY+12}" fill="${color}" font-family="DM Mono" font-size="8" text-anchor="end">K0</text>`;
+  html+=`<text x="${wallX-8-s_Kp*scP-4}" y="${botY+12}" fill="#6ad8a8" font-family="DM Mono" font-size="8" text-anchor="end">Kp</text>`;
+
+  html+=`<line x1="${margin.left-12}" y1="${topY}" x2="${margin.left-12}" y2="${botY}" stroke="#706050" stroke-width="1"/>`;
+  html+=`<text x="${margin.left-14}" y="${topY+dH/2}" fill="#706050" font-family="DM Mono" font-size="9" text-anchor="middle" transform="rotate(-90,${margin.left-14},${topY+dH/2})">H=${H}m</text>`;
+  svg.innerHTML=html;
+}
+</script>
+</body>
+</html>
