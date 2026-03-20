@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Permeabilidad — GeoCalc</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,700;0,900;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f8f9fa;
+  --surface: #ffffff;
+  --surface2: #f0f2f5;
+  --border: #d0d5dd;
+  --accent: #1a5a8a;
+  --accent2: #1a7a5a;
+  --accent3: #8a5a1a;
+  --text: #1a1a2e;
+  --muted: #4a5568;
+  --dark: #1a1a2e;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; }
+body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 60% 40% at 30% 20%, rgba(26,90,138,0.04) 0%, transparent 60%), radial-gradient(ellipse 50% 50% at 70% 80%, rgba(26,122,90,0.03) 0%, transparent 60%); pointer-events: none; z-index: 0; }
+
+.container { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
+.header { margin-bottom: 40px; animation: fadeIn 0.7s ease both; }
+.tag { display: inline-block; background: rgba(26,90,138,0.08); color: var(--accent); border: 2px solid rgba(26,90,138,0.25); font-size: 12px; letter-spacing: 2px; padding: 8px 16px; border-radius: 100px; margin-bottom: 16px; font-weight: 700; }
+h1 { font-family: 'Fraunces', serif; font-size: clamp(2rem,6vw,3.5rem); font-weight: 900; line-height: 1; letter-spacing: -2px; margin-bottom: 12px; color: var(--dark); }
+h1 span { color: var(--accent); font-style: italic; }
+.subtitle { font-size: 14px; color: var(--muted); letter-spacing: 0.5px; line-height: 1.6; font-weight: 500; }
+.divider { height: 2px; background: linear-gradient(90deg, var(--border), transparent); margin: 28px 0; }
+
+.tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--surface); border: 2px solid var(--border); border-radius: 10px; padding: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.tab-btn { flex: 1; background: none; border: none; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 1px; padding: 12px 8px; border-radius: 6px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; text-align: center; font-weight: 600; }
+.tab-btn:hover { color: var(--dark); background: var(--surface2); }
+.tab-btn.active { background: var(--accent); color: #fff; font-weight: 700; }
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.4s ease both; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; background: var(--surface); border: 2px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 18px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.form-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+.form-section { padding: 24px; border-right: 1px solid var(--border); background: var(--surface); }
+.form-section:last-child { border-right: none; }
+.section-label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.field { margin-bottom: 14px; }
+.field:last-child { margin-bottom: 0; }
+label { display: block; font-size: 12px; color: var(--dark); letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600; }
+input[type="number"], select { width: 100%; background: var(--bg); border: 2px solid var(--border); border-radius: 6px; padding: 10px 14px; font-family: 'DM Mono', monospace; font-size: 14px; color: var(--dark); transition: border-color 0.2s; outline: none; -moz-appearance: textfield; font-weight: 500; }
+input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,90,138,0.1); }
+input::placeholder { color: #aaa; }
+select option { background: var(--surface); color: var(--dark); }
+
+.btn-calc { width: 100%; background: var(--accent); color: #fff; border: none; padding: 18px; font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; cursor: pointer; border-radius: 8px; transition: all 0.2s; margin-bottom: 20px; }
+.btn-calc:hover { background: #0e3d6b; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,90,138,0.3); }
+.error-box { display: none; background: #fff5f5; border: 2px solid #fca5a5; border-radius: 6px; padding: 14px 18px; font-size: 13px; color: #991b1b; margin-bottom: 14px; font-weight: 500; }
+.error-box.visible { display: block; }
+.results-box { display: none; }
+.results-box.visible { display: block; animation: slideUp 0.4s cubic-bezier(0.4,0,0.2,1) both; }
+
+.res-main { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 16px; }
+.res-card { background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.res-label { font-size: 11px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; font-weight: 700; }
+.res-value { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+.res-unit { font-size: 12px; color: var(--muted); letter-spacing: 1px; font-weight: 600; }
+
+.summary-card { background: var(--surface2); border: 2px solid var(--border); border-radius: 8px; padding: 20px 24px; margin-bottom: 14px; }
+.summary-card h3 { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; font-weight: 700; }
+.summary-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+.s-label { font-size: 11px; color: var(--muted); letter-spacing: 1px; margin-bottom: 4px; font-weight: 600; }
+.s-value { font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 700; color: var(--dark); }
+
+.info-box { background: rgba(26,90,138,0.05); border: 2px solid rgba(26,90,138,0.2); border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; font-size: 13px; color: var(--muted); line-height: 1.7; font-weight: 500; }
+.info-box strong { color: var(--accent); }
+
+.diagram-section { background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 22px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.diagram-title { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; font-weight: 700; }
+
+/* Tabla capas */
+.layers-table { background: var(--surface); border: 2px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 16px; }
+.layers-header { padding: 14px 18px; border-bottom: 2px solid var(--border); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); font-weight: 700; background: var(--surface2); display: flex; justify-content: space-between; align-items: center; }
+.layers-rows { padding: 12px 18px; }
+.layer-row { display: grid; grid-template-columns: 40px 1fr 1fr 1fr; gap: 10px; align-items: center; margin-bottom: 8px; }
+.layer-row:last-child { margin-bottom: 0; }
+.row-num { font-size: 12px; color: var(--muted); text-align: center; font-weight: 700; }
+.layer-row input { padding: 8px 10px; font-size: 13px; }
+.add-btn { background: none; border: 2px solid var(--border); color: var(--muted); padding: 6px 14px; font-family: 'DM Mono', monospace; font-size: 12px; cursor: pointer; border-radius: 6px; transition: all 0.2s; font-weight: 600; }
+.add-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+table { width: 100%; border-collapse: collapse; }
+th { padding: 10px 16px; text-align: left; font-size: 11px; letter-spacing: 2px; color: var(--dark); background: var(--surface2); border-bottom: 2px solid var(--border); text-transform: uppercase; font-weight: 700; }
+td { padding: 10px 16px; font-size: 13px; border-bottom: 1px solid var(--border); color: var(--dark); font-weight: 500; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface2); }
+
+.btn-reset { background: none; border: 2px solid var(--border); color: var(--muted); padding: 10px 22px; font-family: 'DM Mono', monospace; font-size: 13px; letter-spacing: 1px; cursor: pointer; border-radius: 6px; transition: all 0.2s; margin-top: 4px; font-weight: 600; }
+.btn-reset:hover { border-color: var(--accent); color: var(--accent); }
+
+@keyframes fadeIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+@media (max-width:640px) {
+  .form-grid, .form-grid-3 { grid-template-columns: 1fr; }
+  .form-section { border-right: none; border-bottom: 1px solid var(--border); }
+  .res-main { grid-template-columns: 1fr; }
+  .summary-grid { grid-template-columns: repeat(2,1fr); }
+  .tabs { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="tag">DESAFIO 13 · PERMEABILIDAD Y FLUJO</div>
+    <h1>Permea<span>bilidad</span></h1>
+    <p class="subtitle">// Ley de Darcy · Suelos Estratificados · Redes de Flujo</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showPTab('darcy')">① Ley de Darcy</button>
+    <button class="tab-btn" onclick="showPTab('capas')">② Suelos en Capas</button>
+    <button class="tab-btn" onclick="showPTab('redflow')">③ Red de Flujo</button>
+  </div>
+
+  <!-- TAB 1: LEY DE DARCY -->
+  <div class="tab-content active" id="ptab-darcy">
+    <div class="info-box">
+      <strong>Ley de Darcy</strong> — El caudal de flujo a traves de un suelo es proporcional al gradiente hidraulico:
+      <br>q = k · i · A — donde k = coeficiente de permeabilidad, i = gradiente hidraulico = Dh/L, A = area de flujo
+    </div>
+    <div class="form-grid form-grid-3">
+      <div class="form-section">
+        <div class="section-label">Suelo</div>
+        <div class="field"><label>COEF. PERMEABILIDAD — k (cm/s)</label><input type="number" id="d-k" placeholder="ej. 0.01" min="0" step="0.0001"></div>
+        <div class="field"><label>LONGITUD DE FLUJO — L (m)</label><input type="number" id="d-L" placeholder="ej. 2.0" min="0" step="0.01"></div>
+        <div class="field"><label>AREA DE SECCION — A (m2)</label><input type="number" id="d-A" placeholder="ej. 1.0" min="0" step="0.01"></div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Condicion Hidraulica</div>
+        <div class="field"><label>DIFERENCIA DE CARGA — Dh (m)</label><input type="number" id="d-Dh" placeholder="ej. 0.5" min="0" step="0.01"></div>
+        <div class="field"><label>POROSIDAD — n (%)</label><input type="number" id="d-n" placeholder="ej. 35" min="0" max="60" step="0.1"></div>
+        <div class="field"><label>TIPO DE SUELO</label>
+          <select id="d-tipo">
+            <option value="grava">Grava (k=1-10 cm/s)</option>
+            <option value="arena_gruesa">Arena gruesa (k=0.01-1 cm/s)</option>
+            <option value="arena_fina">Arena fina (k=0.001-0.01 cm/s)</option>
+            <option value="limo">Limo (k=0.00001-0.001 cm/s)</option>
+            <option value="arcilla">Arcilla (k menor a 0.00001 cm/s)</option>
+            <option value="otro">Otro (ingresar k)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Info</div>
+        <div class="field" style="margin-top:8px;">
+          <div style="font-size:12px;color:var(--muted);line-height:1.9;font-weight:500;">
+            i = Dh / L<br>
+            q = k · i · A (m3/s)<br>
+            v = k · i (vel. Darcy)<br>
+            vs = v / n (vel. real)
+          </div>
+        </div>
+        <div class="field"><label>UNIDADES CAUDAL</label>
+          <select id="d-uni">
+            <option value="m3s">m³/s</option>
+            <option value="ls">L/s</option>
+            <option value="m3d">m³/dia</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="error-box" id="d-error"></div>
+    <button class="btn-calc" onclick="calcDarcy()">→ Calcular Flujo (Darcy)</button>
+    <div class="results-box" id="d-results">
+      <div class="res-main">
+        <div class="res-card">
+          <div class="res-label">Caudal q</div>
+          <div class="res-value" id="d-q" style="color:var(--accent)">—</div>
+          <div class="res-unit" id="d-q-unit">m3/s</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Gradiente i</div>
+          <div class="res-value" id="d-i" style="color:var(--accent2)">—</div>
+          <div class="res-unit">adimensional</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Vel. real vs</div>
+          <div class="res-value" id="d-vs" style="color:var(--accent3)">—</div>
+          <div class="res-unit">m/s</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <h3>// Velocidades y caudal</h3>
+        <div class="summary-grid">
+          <div><div class="s-label">Vel. Darcy v</div><div class="s-value" id="d-vd">— m/s</div></div>
+          <div><div class="s-label">Vel. real vs</div><div class="s-value" id="d-vs2">— m/s</div></div>
+          <div><div class="s-label">Gradiente i</div><div class="s-value" id="d-i2">—</div></div>
+          <div><div class="s-label">Tipo suelo</div><div class="s-value" id="d-tipo2">—</div></div>
+        </div>
+      </div>
+      <div class="diagram-section">
+        <div class="diagram-title">// Diagrama de flujo — Ley de Darcy</div>
+        <svg id="d-svg" viewBox="0 0 560 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:220px;"></svg>
+      </div>
+      <button class="btn-reset" onclick="resetDarcy()">← Nuevo calculo</button>
+    </div>
+  </div>
+
+  <!-- TAB 2: SUELOS EN CAPAS -->
+  <div class="tab-content" id="ptab-capas">
+    <div class="info-box">
+      <strong>Suelos Estratificados</strong> — La permeabilidad equivalente depende de la direccion del flujo:
+      <br><strong>Flujo horizontal:</strong> kh = (k1·H1 + k2·H2 + ...) / Htotal
+      <br><strong>Flujo vertical:</strong> kv = Htotal / (H1/k1 + H2/k2 + ...)
+    </div>
+
+    <div class="layers-table">
+      <div class="layers-header">
+        <span>// CAPAS DE SUELO (minimo 2)</span>
+        <button class="add-btn" onclick="addLayer()">+ Agregar capa</button>
+      </div>
+      <div class="layers-rows">
+        <div style="display:grid;grid-template-columns:40px 1fr 1fr 1fr;gap:10px;margin-bottom:8px;padding:0 4px;">
+          <div style="font-size:11px;color:var(--muted);text-align:center;font-weight:700;">#</div>
+          <div style="font-size:11px;color:var(--muted);font-weight:700;">ESPESOR H (m)</div>
+          <div style="font-size:11px;color:var(--muted);font-weight:700;">k (cm/s)</div>
+          <div style="font-size:11px;color:var(--muted);font-weight:700;">DESCRIPCION</div>
+        </div>
+        <div id="layers-container">
+          <div class="layer-row"><div class="row-num">1</div><input type="number" placeholder="ej. 2.0" step="0.01" class="lh"><input type="number" placeholder="ej. 0.01" step="0.00001" class="lk"><input type="text" placeholder="Arena" style="background:var(--bg);border:2px solid var(--border);border-radius:6px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:13px;color:var(--dark);outline:none;" class="ldesc"></div>
+          <div class="layer-row"><div class="row-num">2</div><input type="number" placeholder="ej. 1.5" step="0.01" class="lh"><input type="number" placeholder="ej. 0.0001" step="0.000001" class="lk"><input type="text" placeholder="Arcilla" style="background:var(--bg);border:2px solid var(--border);border-radius:6px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:13px;color:var(--dark);outline:none;" class="ldesc"></div>
+          <div class="layer-row"><div class="row-num">3</div><input type="number" placeholder="ej. 3.0" step="0.01" class="lh"><input type="number" placeholder="ej. 0.001" step="0.0001" class="lk"><input type="text" placeholder="Limo" style="background:var(--bg);border:2px solid var(--border);border-radius:6px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:13px;color:var(--dark);outline:none;" class="ldesc"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="error-box" id="c-error"></div>
+    <button class="btn-calc" onclick="calcCapas()">→ Calcular Permeabilidad Equivalente</button>
+    <div class="results-box" id="c-results">
+      <div class="res-main">
+        <div class="res-card">
+          <div class="res-label">k horizontal (kh)</div>
+          <div class="res-value" id="c-kh" style="color:var(--accent)">—</div>
+          <div class="res-unit">cm/s</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">k vertical (kv)</div>
+          <div class="res-value" id="c-kv" style="color:var(--accent2)">—</div>
+          <div class="res-unit">cm/s</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">kh / kv</div>
+          <div class="res-value" id="c-ratio" style="color:var(--accent3)">—</div>
+          <div class="res-unit">anisotropia</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <h3>// Detalle por capas</h3>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Capa</th><th>H (m)</th><th>k (cm/s)</th><th>H/k</th><th>k·H</th><th>Descripcion</th></tr></thead>
+            <tbody id="c-tabla"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="diagram-section">
+        <div class="diagram-title">// Diagrama de capas estratificadas</div>
+        <svg id="c-svg" viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:260px;"></svg>
+      </div>
+      <button class="btn-reset" onclick="resetCapas()">← Nuevo calculo</button>
+    </div>
+  </div>
+
+  <!-- TAB 3: RED DE FLUJO -->
+  <div class="tab-content" id="ptab-redflow">
+    <div class="info-box">
+      <strong>Red de Flujo</strong> — Metodo grafico para calcular el caudal de filtracion a traves o bajo estructuras. El caudal depende del numero de canales de flujo (Nf) y equipotenciales (Nd):
+      <br>q = k · Dh · (Nf / Nd) — por unidad de longitud
+    </div>
+    <div class="form-grid">
+      <div class="form-section">
+        <div class="section-label">Datos de la Red</div>
+        <div class="field"><label>COEF. PERMEABILIDAD — k (cm/s)</label><input type="number" id="rf-k" placeholder="ej. 0.005" min="0" step="0.00001"></div>
+        <div class="field"><label>CARGA HIDRAULICA TOTAL — Dh (m)</label><input type="number" id="rf-Dh" placeholder="ej. 5.0" min="0" step="0.1"></div>
+        <div class="field"><label>NUM. CANALES DE FLUJO — Nf</label><input type="number" id="rf-Nf" placeholder="ej. 4" min="1" step="1"></div>
+        <div class="field"><label>NUM. EQUIPOTENCIALES — Nd</label><input type="number" id="rf-Nd" placeholder="ej. 12" min="1" step="1"></div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Estructura</div>
+        <div class="field"><label>LONGITUD DE LA ESTRUCTURA — B (m)</label><input type="number" id="rf-B" placeholder="ej. 20" min="0" step="0.1"></div>
+        <div class="field"><label>TIPO DE ESTRUCTURA</label>
+          <select id="rf-tipo">
+            <option value="presa">Presa de tierra</option>
+            <option value="ataguia">Ataguia / tablestaca</option>
+            <option value="cimentacion">Cimentacion</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div class="field" style="margin-top:8px;">
+          <div style="font-size:12px;color:var(--muted);line-height:1.8;font-weight:500;">
+            Nf tipico: 3-6<br>
+            Nd tipico: 8-16<br>
+            Factor forma: Nf/Nd
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="error-box" id="rf-error"></div>
+    <button class="btn-calc" onclick="calcRedFlow()">→ Calcular Caudal de Filtracion</button>
+    <div class="results-box" id="rf-results">
+      <div class="res-main">
+        <div class="res-card">
+          <div class="res-label">Caudal unitario q</div>
+          <div class="res-value" id="rf-q" style="color:var(--accent)">—</div>
+          <div class="res-unit">m3/s por m</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Caudal total Q</div>
+          <div class="res-value" id="rf-Q" style="color:var(--accent2)">—</div>
+          <div class="res-unit">m3/s</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Factor de forma</div>
+          <div class="res-value" id="rf-ff" style="color:var(--accent3)">—</div>
+          <div class="res-unit">Nf / Nd</div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <h3>// Detalle del calculo</h3>
+        <div class="summary-grid">
+          <div><div class="s-label">k (cm/s)</div><div class="s-value" id="rf-k2">—</div></div>
+          <div><div class="s-label">Dh (m)</div><div class="s-value" id="rf-Dh2">—</div></div>
+          <div><div class="s-label">Nf / Nd</div><div class="s-value" id="rf-NfNd">—</div></div>
+          <div><div class="s-label">Q diario</div><div class="s-value" id="rf-Qd">— m3/dia</div></div>
+        </div>
+      </div>
+      <div class="diagram-section">
+        <div class="diagram-title">// Esquema de red de flujo</div>
+        <svg id="rf-svg" viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:240px;"></svg>
+      </div>
+      <button class="btn-reset" onclick="resetRedFlow()">← Nuevo calculo</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let layerCount = 3;
+
+function showPTab(id) {
+  ['darcy','capas','redflow'].forEach(t => {
+    document.getElementById('ptab-'+t).classList.remove('active');
+    document.getElementById('ptab-'+t).style.display = 'none';
+  });
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('ptab-'+id).classList.add('active');
+  document.getElementById('ptab-'+id).style.display = 'block';
+  ['darcy','capas','redflow'].forEach((t,i) => { if(t===id) document.querySelectorAll('.tab-btn')[i].classList.add('active'); });
+}
+
+function gv(id){const v=parseFloat(document.getElementById(id).value);return isNaN(v)?null:v;}
+function showPErr(id,msg){const el=document.getElementById(id);if(msg){el.textContent=msg;el.classList.add('visible');}else el.classList.remove('visible');}
+
+// ── DARCY ──
+function calcDarcy() {
+  showPErr('d-error','');document.getElementById('d-results').classList.remove('visible');
+  const k=gv('d-k'),L=gv('d-L'),A=gv('d-A'),Dh=gv('d-Dh'),n=gv('d-n');
+  const uni=document.getElementById('d-uni').value;
+  const tipo=document.getElementById('d-tipo').value;
+  if(!k){showPErr('d-error','Ingresa k.');return;}
+  if(!L){showPErr('d-error','Ingresa L.');return;}
+  if(!A){showPErr('d-error','Ingresa A.');return;}
+  if(!Dh){showPErr('d-error','Ingresa Dh.');return;}
+
+  const k_ms = k / 100; // cm/s a m/s
+  const i = Dh / L;
+  const v = k_ms * i;
+  const q_m3s = v * A;
+  const n_dec = (n || 35) / 100;
+  const vs = v / n_dec;
+
+  let q_fmt, q_lbl;
+  if(uni==='ls') { q_fmt = (q_m3s*1000).toExponential(3); q_lbl='L/s'; }
+  else if(uni==='m3d') { q_fmt = (q_m3s*86400).toExponential(3); q_lbl='m3/dia'; }
+  else { q_fmt = q_m3s.toExponential(3); q_lbl='m3/s'; }
+
+  const tipoLabels = {'grava':'Grava','arena_gruesa':'Arena gruesa','arena_fina':'Arena fina','limo':'Limo','arcilla':'Arcilla','otro':'Otro'};
+
+  document.getElementById('d-q').textContent = q_fmt;
+  document.getElementById('d-q-unit').textContent = q_lbl;
+  document.getElementById('d-i').textContent = i.toFixed(4);
+  document.getElementById('d-vs').textContent = vs.toExponential(3);
+  document.getElementById('d-vd').textContent = v.toExponential(3)+' m/s';
+  document.getElementById('d-vs2').textContent = vs.toExponential(3)+' m/s';
+  document.getElementById('d-i2').textContent = i.toFixed(4);
+  document.getElementById('d-tipo2').textContent = tipoLabels[tipo];
+
+  dibujarDarcy('d-svg', L, Dh, i, v, A);
+  document.getElementById('d-results').classList.add('visible');
+}
+
+function dibujarDarcy(svgId, L, Dh, i, v, A) {
+  const svg = document.getElementById(svgId);
+  const W=560, H=260;
+  const mx=60, my=30, mw=W-120, mh=H-80;
+  const tubeY = my+mh*0.3, tubeH = mh*0.4;
+
+  let html='';
+  // Contenedor izquierdo (agua alta)
+  html+=`<rect x="${mx}" y="${my}" width="60" height="${mh}" fill="rgba(26,90,138,0.15)" stroke="var(--accent)" stroke-width="1.5" rx="4"/>`;
+  // Nivel agua alto
+  const h1Y = my + mh*0.2;
+  html+=`<rect x="${mx+2}" y="${h1Y}" width="56" height="${mh-mh*0.2-2}" fill="rgba(26,90,138,0.3)" rx="2"/>`;
+  html+=`<text x="${mx+30}" y="${h1Y-6}" fill="var(--accent)" font-family="DM Mono" font-size="10" text-anchor="middle" font-weight="700">h1</text>`;
+
+  // Muestra de suelo
+  html+=`<rect x="${mx+60}" y="${tubeY}" width="${mw-120}" height="${tubeH}" fill="rgba(139,94,26,0.15)" stroke="var(--accent3)" stroke-width="1.5" rx="0"/>`;
+  html+=`<text x="${mx+60+( mw-120)/2}" y="${tubeY+tubeH/2+5}" fill="var(--accent3)" font-family="DM Mono" font-size="11" text-anchor="middle" font-weight="700">SUELO k=${gv('d-k')} cm/s</text>`;
+
+  // Contenedor derecho (agua baja)
+  html+=`<rect x="${mx+mw-60}" y="${my}" width="60" height="${mh}" fill="rgba(26,90,138,0.10)" stroke="var(--accent)" stroke-width="1.5" rx="4"/>`;
+  const h2Y = my + mh*0.2 + Dh/(Dh+1)*mh*0.5;
+  html+=`<rect x="${mx+mw-58}" y="${h2Y}" width="56" height="${mh-h2Y+my-2}" fill="rgba(26,90,138,0.2)" rx="2"/>`;
+  html+=`<text x="${mx+mw-30}" y="${h2Y-6}" fill="var(--accent)" font-family="DM Mono" font-size="10" text-anchor="middle" font-weight="700">h2</text>`;
+
+  // Flecha de flujo
+  const arrowY = tubeY+tubeH/2;
+  html+=`<defs><marker id="darr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#1a5a8a" stroke-width="1.5"/></marker></defs>`;
+  html+=`<line x1="${mx+65}" y1="${arrowY}" x2="${mx+mw-65}" y2="${arrowY}" stroke="var(--accent)" stroke-width="2" marker-end="url(#darr)"/>`;
+  html+=`<text x="${mx+60+(mw-120)/2}" y="${arrowY-10}" fill="var(--accent)" font-family="DM Mono" font-size="9" text-anchor="middle" font-weight="700">q = k·i·A</text>`;
+
+  // Cota Dh
+  html+=`<line x1="${mx+mw-60}" y1="${h1Y}" x2="${mx+mw+20}" y2="${h1Y}" stroke="#4a5568" stroke-width="0.8" stroke-dasharray="3,2"/>`;
+  html+=`<line x1="${mx+mw-60}" y1="${h2Y}" x2="${mx+mw+20}" y2="${h2Y}" stroke="#4a5568" stroke-width="0.8" stroke-dasharray="3,2"/>`;
+  html+=`<line x1="${mx+mw+15}" y1="${h1Y}" x2="${mx+mw+15}" y2="${h2Y}" stroke="#4a5568" stroke-width="1"/>`;
+  html+=`<text x="${mx+mw+28}" y="${(h1Y+h2Y)/2+4}" fill="#4a5568" font-family="DM Mono" font-size="10" font-weight="700">Dh=${Dh}m</text>`;
+
+  // L label
+  html+=`<line x1="${mx+60}" y1="${tubeY+tubeH+15}" x2="${mx+mw-60}" y2="${tubeY+tubeH+15}" stroke="#4a5568" stroke-width="1"/>`;
+  html+=`<text x="${mx+60+(mw-120)/2}" y="${tubeY+tubeH+28}" fill="#4a5568" font-family="DM Mono" font-size="10" text-anchor="middle" font-weight="700">L=${L}m</text>`;
+
+  svg.innerHTML = html;
+}
+function resetDarcy(){['d-k','d-L','d-A','d-Dh','d-n'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('d-results').classList.remove('visible');}
+
+// ── CAPAS ──
+function addLayer() {
+  layerCount++;
+  const container = document.getElementById('layers-container');
+  const row = document.createElement('div');
+  row.className = 'layer-row';
+  row.innerHTML = `<div class="row-num">${layerCount}</div>
+    <input type="number" placeholder="H (m)" step="0.01" class="lh" style="background:var(--bg);border:2px solid var(--border);border-radius:6px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:13px;color:var(--dark);outline:none;-moz-appearance:textfield;">
+    <input type="number" placeholder="k (cm/s)" step="0.00001" class="lk" style="background:var(--bg);border:2px solid var(--border);border-radius:6px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:13px;color:var(--dark);outline:none;-moz-appearance:textfield;">
+    <input type="text" placeholder="Descripcion" class="ldesc" style="background:var(--bg);border:2px solid var(--border);border-radius:6px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:13px;color:var(--dark);outline:none;">`;
+  container.appendChild(row);
+}
+
+function calcCapas() {
+  showPErr('c-error','');document.getElementById('c-results').classList.remove('visible');
+  const hInputs=document.querySelectorAll('.lh'), kInputs=document.querySelectorAll('.lk'), dInputs=document.querySelectorAll('.ldesc');
+  const layers=[];
+  hInputs.forEach((hi,i)=>{const h=parseFloat(hi.value),k=parseFloat(kInputs[i].value),desc=dInputs[i].value||('Capa '+(i+1));if(!isNaN(h)&&!isNaN(k)&&h>0&&k>0)layers.push({h,k,desc});});
+  if(layers.length<2){showPErr('c-error','Ingresa al menos 2 capas validas.');return;}
+
+  const Ht=layers.reduce((s,l)=>s+l.h,0);
+  const kh=layers.reduce((s,l)=>s+l.k*l.h,0)/Ht;
+  const kv=Ht/layers.reduce((s,l)=>s+l.h/l.k,0);
+  const ratio=kh/kv;
+
+  document.getElementById('c-kh').textContent=kh.toExponential(3);
+  document.getElementById('c-kv').textContent=kv.toExponential(3);
+  document.getElementById('c-ratio').textContent=ratio.toFixed(1);
+
+  const colors=['rgba(26,90,138,0.3)','rgba(26,122,90,0.3)','rgba(138,90,26,0.3)','rgba(90,26,138,0.3)','rgba(26,90,90,0.3)'];
+  let tableHTML='', totalH=0;
+  layers.forEach((l,i)=>{
+    tableHTML+=`<tr><td>${i+1}</td><td>${l.h.toFixed(2)}</td><td>${l.k.toExponential(3)}</td><td>${(l.h/l.k).toExponential(3)}</td><td>${(l.k*l.h).toExponential(3)}</td><td>${l.desc}</td></tr>`;
+  });
+  document.getElementById('c-tabla').innerHTML=tableHTML;
+
+  dibujarCapas('c-svg',layers,colors);
+  document.getElementById('c-results').classList.add('visible');
+}
+
+function dibujarCapas(svgId,layers,colors){
+  const svg=document.getElementById(svgId);
+  const W=560,H=300,mx=60,my=20,mw=300,Ht=layers.reduce((s,l)=>s+l.h,0);
+  const scY=(H-60)/Ht;
+  let html='',y=my;
+  const layerColors=['rgba(26,90,138,0.2)','rgba(26,122,90,0.2)','rgba(138,90,26,0.2)','rgba(90,26,138,0.2)','rgba(90,90,26,0.2)'];
+  const strokeColors=['#1a5a8a','#1a7a5a','#8a5a1a','#5a1a8a','#5a5a1a'];
+  layers.forEach((l,i)=>{
+    const hpx=l.h*scY;
+    html+=`<rect x="${mx}" y="${y}" width="${mw}" height="${hpx}" fill="${layerColors[i%5]}" stroke="${strokeColors[i%5]}" stroke-width="1.5"/>`;
+    html+=`<text x="${mx+mw/2}" y="${y+hpx/2+5}" fill="${strokeColors[i%5]}" font-family="DM Mono" font-size="11" text-anchor="middle" font-weight="700">${l.desc} · k=${l.k.toExponential(2)}</text>`;
+    html+=`<text x="${mx+mw+10}" y="${y+hpx/2+5}" fill="#4a5568" font-family="DM Mono" font-size="10" font-weight="600">H${i+1}=${l.h}m</text>`;
+    y+=hpx;
+  });
+  // Flecha horizontal (kh)
+  html+=`<defs><marker id="carr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#1a5a8a" stroke-width="1.5"/></marker></defs>`;
+  html+=`<line x1="${mx-30}" y1="${my+(H-60)/2}" x2="${mx}" y2="${my+(H-60)/2}" stroke="#1a5a8a" stroke-width="2" marker-end="url(#carr)"/>`;
+  html+=`<text x="${mx-32}" y="${my+(H-60)/2-6}" fill="#1a5a8a" font-family="DM Mono" font-size="9" text-anchor="middle" font-weight="700">kh</text>`;
+  // Flecha vertical (kv)
+  html+=`<line x1="${mx+mw/2}" y1="${my-15}" x2="${mx+mw/2}" y2="${my}" stroke="#1a7a5a" stroke-width="2" marker-end="url(#carr)"/>`;
+  html+=`<text x="${mx+mw/2+12}" y="${my-5}" fill="#1a7a5a" font-family="DM Mono" font-size="9" font-weight="700">kv</text>`;
+
+  svg.innerHTML=html;
+}
+function resetCapas(){document.querySelectorAll('.lh,.lk,.ldesc').forEach(el=>el.value='');document.getElementById('c-results').classList.remove('visible');}
+
+// ── RED DE FLUJO ──
+function calcRedFlow(){
+  showPErr('rf-error','');document.getElementById('rf-results').classList.remove('visible');
+  const k=gv('rf-k'),Dh=gv('rf-Dh'),Nf=gv('rf-Nf'),Nd=gv('rf-Nd'),B=gv('rf-B');
+  if(!k){showPErr('rf-error','Ingresa k.');return;}
+  if(!Dh){showPErr('rf-error','Ingresa Dh.');return;}
+  if(!Nf){showPErr('rf-error','Ingresa Nf.');return;}
+  if(!Nd){showPErr('rf-error','Ingresa Nd.');return;}
+
+  const k_ms=k/100;
+  const ff=Nf/Nd;
+  const q_unit=k_ms*Dh*ff; // m3/s por m de longitud
+  const Q_total=B?q_unit*B:q_unit;
+  const Q_diario=Q_total*86400;
+
+  document.getElementById('rf-q').textContent=q_unit.toExponential(3);
+  document.getElementById('rf-Q').textContent=B?Q_total.toExponential(3):'N/A';
+  document.getElementById('rf-ff').textContent=ff.toFixed(3);
+  document.getElementById('rf-k2').textContent=k+' cm/s';
+  document.getElementById('rf-Dh2').textContent=Dh+' m';
+  document.getElementById('rf-NfNd').textContent=Nf+' / '+Nd;
+  document.getElementById('rf-Qd').textContent=Q_diario.toExponential(3)+' m3/dia';
+
+  dibujarRedFlujo('rf-svg',Nf,Nd,Dh);
+  document.getElementById('rf-results').classList.add('visible');
+}
+
+function dibujarRedFlujo(svgId,Nf,Nd,Dh){
+  const svg=document.getElementById(svgId);
+  const W=560,H=280;
+  const mx=50,my=30,mw=W-100,mh=H-80;
+  let html='';
+
+  // Estructura (presa simplificada)
+  html+=`<rect x="${mx}" y="${my}" width="${mw}" height="${mh}" fill="rgba(26,90,138,0.05)" stroke="var(--border)" stroke-width="1.5" rx="4"/>`;
+  // Suelo bajo presa
+  html+=`<rect x="${mx}" y="${my+mh*0.4}" width="${mw}" height="${mh*0.6}" fill="rgba(138,90,26,0.1)" stroke="var(--accent3)" stroke-width="1" rx="0"/>`;
+  html+=`<text x="${mx+mw/2}" y="${my+mh*0.7+5}" fill="var(--accent3)" font-family="DM Mono" font-size="11" text-anchor="middle" font-weight="700">SUELO PERMEABLE k=${gv('rf-k')} cm/s</text>`;
+
+  // Lineas de flujo (Nf canales)
+  const nf=Math.min(Nf,6);
+  for(let i=1;i<nf;i++){
+    const y=my+mh*0.4+i*(mh*0.6)/(nf);
+    html+=`<path d="M${mx},${y} Q${mx+mw/3},${y+10} ${mx+mw/2},${y} Q${mx+2*mw/3},${y-10} ${mx+mw},${y}" fill="none" stroke="#1a5a8a" stroke-width="1.5" stroke-dasharray="none" opacity="0.6"/>`;
+  }
+
+  // Equipotenciales (Nd)
+  const nd=Math.min(Nd,10);
+  for(let i=1;i<nd;i++){
+    const x=mx+i*mw/nd;
+    html+=`<line x1="${x}" y1="${my+mh*0.4}" x2="${x}" y2="${my+mh}" stroke="#1a7a5a" stroke-width="1" opacity="0.5" stroke-dasharray="4,3"/>`;
+  }
+
+  // Nivel agua aguas arriba
+  html+=`<rect x="${mx}" y="${my}" width="80" height="${mh*0.4}" fill="rgba(26,90,138,0.25)" rx="2"/>`;
+  html+=`<text x="${mx+40}" y="${my+mh*0.2+4}" fill="#1a5a8a" font-family="DM Mono" font-size="10" text-anchor="middle" font-weight="700">h1</text>`;
+  // Nivel agua aguas abajo
+  const h2H=mh*0.4*0.4;
+  html+=`<rect x="${mx+mw-80}" y="${my+mh*0.4-h2H}" width="80" height="${h2H}" fill="rgba(26,90,138,0.15)" rx="2"/>`;
+  html+=`<text x="${mx+mw-40}" y="${my+mh*0.4-h2H/2+4}" fill="#1a5a8a" font-family="DM Mono" font-size="10" text-anchor="middle" font-weight="700">h2</text>`;
+
+  // Labels
+  html+=`<text x="${mx}" y="${my-8}" fill="#4a5568" font-family="DM Mono" font-size="9" font-weight="700">Nf=${Nf} canales de flujo</text>`;
+  html+=`<text x="${mx+mw}" y="${my-8}" fill="#1a7a5a" font-family="DM Mono" font-size="9" text-anchor="end" font-weight="700">Nd=${Nd} equipotenciales</text>`;
+
+  svg.innerHTML=html;
+}
+function resetRedFlow(){['rf-k','rf-Dh','rf-Nf','rf-Nd','rf-B'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('rf-results').classList.remove('visible');}
+</script>
+</body>
+</html>
