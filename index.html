@@ -53,6 +53,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba
 .tool-card.pilotes::before { background: #9a3ab8; }
 .tool-card.presiones::before { background: #8b5e1a; }
 .tool-card.permea::before { background: #1a5a8a; }
+.tool-card.corte::before { background: #7a1a5a; }
 .tool-card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 8px 24px rgba(45,106,45,0.12); }
 .tool-card:hover::before { transform: scaleX(1); }
 .tool-icon { font-size: 32px; margin-bottom: 16px; display: block; }
@@ -68,6 +69,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba
 .tool-card.pilotes .tool-name { color: #9a3ab8; }
 .tool-card.presiones .tool-name { color: #8b5e1a; }
 .tool-card.permea .tool-name { color: #1a5a8a; }
+.tool-card.corte .tool-name { color: #7a1a5a; }
 .tool-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
 .tool-arrow { position: absolute; top: 24px; right: 24px; color: var(--border); font-size: 18px; transition: all 0.2s; }
 .tool-card:hover .tool-arrow { color: var(--accent); transform: translate(2px,-2px); }
@@ -200,6 +202,7 @@ tr:hover td { background: var(--surface2); }
     <button class="nav-btn" onclick="showPage('pilotes')">Pilotes</button>
     <button class="nav-btn" onclick="showPage('presiones')">Presiones</button>
     <button class="nav-btn" onclick="showPage('permea')">Permeabilidad</button>
+    <button class="nav-btn" onclick="showPage('corte')">Corte</button>
   </div>
 </nav>
 
@@ -281,9 +284,16 @@ tr:hover td { background: var(--surface2); }
         <div class="tool-name">Permeabilidad</div>
         <div class="tool-desc">Ley de Darcy · Suelos en capas · Red de flujo y filtracion.</div>
       </div>
+      <div class="tool-card corte" onclick="showPage('corte')">
+        <span class="tool-arrow">↗</span>
+        <span class="tool-icon">✂️</span>
+        <div class="tool-number">HERRAMIENTA 11</div>
+        <div class="tool-name">Resistencia al Corte</div>
+        <div class="tool-desc">Corte directo · Triaxial UU/CU/CD · Envolvente Mohr-Coulomb.</div>
+      </div>
     </div>
     <div class="stats-grid">
-      <div class="stat-item"><div class="stat-value">10</div><div class="stat-label">HERRAMIENTAS ACTIVAS</div></div>
+      <div class="stat-item"><div class="stat-value">11</div><div class="stat-label">HERRAMIENTAS ACTIVAS</div></div>
       <div class="stat-item"><div class="stat-value">4</div><div class="stat-label">MÉTODOS DE CÁLCULO</div></div>
       <div class="stat-item"><div class="stat-value">∞</div><div class="stat-label">CÁLCULOS DISPONIBLES</div></div>
     </div>
@@ -598,7 +608,7 @@ function showPage(id) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
-  document.querySelectorAll('.nav-btn')[['home','sucs','carga','consol','asent','muro','talud','compact','pilotes','presiones','permea'].indexOf(id)].classList.add('active');
+  document.querySelectorAll('.nav-btn')[['home','sucs','carga','consol','asent','muro','talud','compact','pilotes','presiones','permea','corte'].indexOf(id)].classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -1350,6 +1360,25 @@ function resetSInfinito(){['si-beta','si-z','si-c','si-phi','si-gamma','si-gamma
         Caudal de filtracion · kh y kv equivalentes · Factor de forma
       </div>
       <a href="permeabilidad.html" style="display:inline-block;background:#1a5a8a;color:#fff;padding:14px 32px;border-radius:8px;font-family:'Fraunces',serif;font-size:16px;font-weight:700;text-decoration:none;">→ Abrir Herramienta</a>
+    </div>
+  </div>
+</div>
+<!-- CORTE -->
+<div class="page" id="page-corte">
+  <div class="tool-page">
+    <div class="page-header">
+      <div><div style="font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;font-weight:700;">// HERRAMIENTA 11</div><h2 style="color:#7a1a5a">Resistencia<br>al Corte</h2></div>
+      <button class="back-btn" onclick="showPage('home')">← Inicio</button>
+    </div>
+    <div class="divider"></div>
+    <div style="background:rgba(122,26,90,0.05);border:2px solid rgba(122,26,90,0.2);border-radius:8px;padding:32px 24px;text-align:center;">
+      <div style="font-size:32px;margin-bottom:16px;">✂️</div>
+      <div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:#7a1a5a;margin-bottom:12px;">Herramienta de Resistencia al Corte</div>
+      <div style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:24px;">
+        Corte Directo · Triaxial UU/CU/CD · Mohr-Coulomb<br>
+        Parametros c y phi · Circulos de Mohr · Factor de seguridad
+      </div>
+      <a href="corte.html" style="display:inline-block;background:#7a1a5a;color:#fff;padding:14px 32px;border-radius:8px;font-family:'Fraunces',serif;font-size:16px;font-weight:700;text-decoration:none;">→ Abrir Herramienta</a>
     </div>
   </div>
 </div>
