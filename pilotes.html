@@ -7,16 +7,16 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,700;0,900;1,300&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0c0a10;
-  --surface: #131018;
-  --surface2: #181520;
-  --border: #252030;
-  --accent: #d86ad8;
-  --accent2: #d8c86a;
-  --accent3: #6ad8a8;
-  --text: #e8d8f0;
-  --muted: #605870;
-  --dark: #08060c;
+  --bg: #f8f9fa;
+  --surface: #ffffff;
+  --surface2: #f0f2f5;
+  --border: #d0d5dd;
+  --accent: #7a3ab8;
+  --accent2: #8b5e1a;
+  --accent3: #1a6b5e;
+  --text: #1a1a2e;
+  --muted: #4a5568;
+  --dark: #1a1a2e;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; }
@@ -41,18 +41,18 @@ h1 span { color: var(--accent); font-style: italic; }
 .form-grid-2 { grid-template-columns: 1fr 1fr; }
 .form-section { padding: 22px; border-right: 1px solid var(--border); }
 .form-section:last-child { border-right: none; }
-.section-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.section-label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 .field { margin-bottom: 12px; }
 .field:last-child { margin-bottom: 0; }
-label { display: block; font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 5px; }
-input[type="number"], select { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 9px 12px; font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text); transition: border-color 0.2s; outline: none; -moz-appearance: textfield; }
+label { display: block; font-size: 12px; color: var(--dark); letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600; }
+input[type="number"], select { width: 100%; background: var(--bg); border: 2px solid var(--border); border-radius: 6px; padding: 10px 14px; font-family: 'DM Mono', monospace; font-size: 14px; color: var(--dark); font-weight: 500; transition: border-color 0.2s; outline: none; -moz-appearance: textfield; }
 input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
 input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(216,106,216,0.1); }
 input::placeholder { color: var(--border); }
 select option { background: var(--surface); }
 
-.btn-calc { width: 100%; background: var(--accent); color: var(--dark); border: none; padding: 16px; font-family: 'Fraunces', serif; font-size: 17px; font-weight: 700; cursor: pointer; border-radius: 3px; transition: all 0.2s; margin-bottom: 20px; }
+.btn-calc { width: 100%; background: var(--accent); color: #fff; border: none; padding: 18px; font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; cursor: pointer; border-radius: 3px; transition: all 0.2s; margin-bottom: 20px; }
 .btn-calc:hover { filter: brightness(1.1); transform: translateY(-1px); }
 .error-box { display: none; background: rgba(192,57,43,0.1); border: 1px solid rgba(192,57,43,0.3); border-radius: 3px; padding: 12px 16px; font-size: 12px; color: #e07060; margin-bottom: 14px; }
 .error-box.visible { display: block; }
@@ -72,7 +72,7 @@ select option { background: var(--surface); }
 .s-value { font-family: 'Fraunces', serif; font-size: 1rem; font-weight: 700; color: var(--accent); }
 
 .diagram-section { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 20px; margin-bottom: 14px; }
-.diagram-title { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+.diagram-title { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; font-weight: 700; }
 
 .info-box { background: rgba(216,106,216,0.05); border: 1px solid rgba(216,106,216,0.15); border-radius: 4px; padding: 14px 18px; margin-bottom: 16px; font-size: 12px; color: var(--muted); line-height: 1.7; }
 .info-box strong { color: var(--accent); }
