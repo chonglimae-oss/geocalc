@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elementos Finitos — GeoCalc</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,700;0,900;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f8f9fa;
+  --surface: #ffffff;
+  --surface2: #f0f2f5;
+  --border: #d0d5dd;
+  --accent: #1a5a3a;
+  --accent2: #5a1a8a;
+  --accent3: #1a3a8a;
+  --text: #1a1a2e;
+  --muted: #4a5568;
+  --dark: #1a1a2e;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; }
+body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 60% 40% at 30% 20%, rgba(26,90,58,0.04) 0%, transparent 60%); pointer-events: none; z-index: 0; }
+
+.container { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 48px 24px 80px; }
+.header { margin-bottom: 40px; }
+.tag { display: inline-block; background: rgba(26,90,58,0.08); color: var(--accent); border: 2px solid rgba(26,90,58,0.25); font-size: 12px; letter-spacing: 2px; padding: 8px 16px; border-radius: 100px; margin-bottom: 16px; font-weight: 700; }
+h1 { font-family: 'Fraunces', serif; font-size: clamp(2rem,6vw,3.5rem); font-weight: 900; line-height: 1; letter-spacing: -2px; margin-bottom: 12px; color: var(--dark); }
+h1 span { color: var(--accent); font-style: italic; }
+.subtitle { font-size: 14px; color: var(--muted); line-height: 1.6; font-weight: 500; }
+.divider { height: 2px; background: linear-gradient(90deg, var(--border), transparent); margin: 28px 0; }
+
+.tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--surface); border: 2px solid var(--border); border-radius: 10px; padding: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.tab-btn { flex: 1; background: none; border: none; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 1px; padding: 12px 8px; border-radius: 6px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; text-align: center; font-weight: 600; }
+.tab-btn:hover { color: var(--dark); background: var(--surface2); }
+.tab-btn.active { background: var(--accent); color: #fff; font-weight: 700; }
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.4s ease both; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; background: var(--surface); border: 2px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 18px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.form-grid-2 { grid-template-columns: 1fr 1fr; }
+.form-section { padding: 24px; border-right: 1px solid var(--border); }
+.form-section:last-child { border-right: none; }
+.section-label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.field { margin-bottom: 14px; }
+.field:last-child { margin-bottom: 0; }
+label { display: block; font-size: 12px; color: var(--dark); margin-bottom: 6px; font-weight: 600; }
+input[type="number"], select { width: 100%; background: var(--bg); border: 2px solid var(--border); border-radius: 6px; padding: 10px 14px; font-family: 'DM Mono', monospace; font-size: 14px; color: var(--dark); outline: none; -moz-appearance: textfield; font-weight: 500; transition: border-color 0.2s; }
+input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,90,58,0.1); }
+input::placeholder { color: #aaa; }
+
+.btn-calc { width: 100%; background: var(--accent); color: #fff; border: none; padding: 18px; font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; cursor: pointer; border-radius: 8px; transition: all 0.2s; margin-bottom: 20px; }
+.btn-calc:hover { background: #0e3d24; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,90,58,0.3); }
+.error-box { display: none; background: #fff5f5; border: 2px solid #fca5a5; border-radius: 6px; padding: 14px 18px; font-size: 13px; color: #991b1b; margin-bottom: 14px; font-weight: 500; }
+.error-box.visible { display: block; }
+.results-box { display: none; }
+.results-box.visible { display: block; animation: slideUp 0.4s ease both; }
+
+.res-main { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 16px; }
+.res-card { background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.res-label { font-size: 11px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; font-weight: 700; }
+.res-value { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+.res-unit { font-size: 12px; color: var(--muted); font-weight: 600; }
+
+.summary-card { background: var(--surface2); border: 2px solid var(--border); border-radius: 8px; padding: 20px 24px; margin-bottom: 14px; }
+.summary-card h3 { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; font-weight: 700; }
+.summary-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+.s-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; font-weight: 600; }
+.s-value { font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 700; color: var(--dark); }
+
+.info-box { background: rgba(26,90,58,0.05); border: 2px solid rgba(26,90,58,0.2); border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; font-size: 13px; color: var(--muted); line-height: 1.7; font-weight: 500; }
+.info-box strong { color: var(--accent); }
+
+.mesh-section { background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 22px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.mesh-title { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; font-weight: 700; }
+
+.legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.legend-color { width: 20px; height: 12px; border-radius: 2px; }
+
+.btn-reset { background: none; border: 2px solid var(--border); color: var(--muted); padding: 10px 22px; font-family: 'DM Mono', monospace; font-size: 13px; cursor: pointer; border-radius: 6px; transition: all 0.2s; font-weight: 600; }
+.btn-reset:hover { border-color: var(--accent); color: var(--accent); }
+
+table { width: 100%; border-collapse: collapse; }
+th { padding: 10px 16px; text-align: left; font-size: 11px; color: var(--dark); background: var(--surface2); border-bottom: 2px solid var(--border); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
+td { padding: 10px 16px; font-size: 13px; border-bottom: 1px solid var(--border); color: var(--dark); font-weight: 500; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface2); }
+
+@keyframes fadeIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+@media(max-width:640px) {
+  .form-grid, .form-grid-2 { grid-template-columns: 1fr; }
+  .form-section { border-right: none; border-bottom: 1px solid var(--border); }
+  .res-main { grid-template-columns: 1fr; }
+  .summary-grid { grid-template-columns: repeat(2,1fr); }
+  .tabs { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="tag">DESAFIO 15 · METODO DE ELEMENTOS FINITOS</div>
+    <h1>Elementos<br><span>Finitos</span></h1>
+    <p class="subtitle">// Analisis de Esfuerzos · Asentamientos MEF · Flujo (Seepage) · Mallado Visual</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showFTab('esfuerzos')">① Esfuerzos</button>
+    <button class="tab-btn" onclick="showFTab('asent')">② Asentamientos</button>
+    <button class="tab-btn" onclick="showFTab('flujo')">③ Flujo (Seepage)</button>
+  </div>
+
+  <!-- TAB 1: ESFUERZOS -->
+  <div class="tab-content active" id="ftab-esfuerzos">
+    <div class="info-box">
+      <strong>Analisis de Esfuerzos por MEF</strong> — Divide el dominio en elementos rectangulares y calcula la distribucion de esfuerzos verticales bajo una carga aplicada. Usa la solucion de Boussinesq como base para cada elemento.
+      <br>sigma_z = (3·Q·z³) / (2·pi·(r²+z²)^2.5) — esfuerzo vertical bajo carga puntual
+    </div>
+    <div class="form-grid">
+      <div class="form-section">
+        <div class="section-label">Geometria del Dominio</div>
+        <div class="field"><label>ANCHO DEL DOMINIO — B (m)</label><input type="number" id="e-B" placeholder="ej. 10" min="1" step="0.5"></div>
+        <div class="field"><label>PROFUNDIDAD — H (m)</label><input type="number" id="e-H" placeholder="ej. 8" min="1" step="0.5"></div>
+        <div class="field"><label>DIVISION DE MALLA — nx x nz</label>
+          <select id="e-mesh">
+            <option value="5">5 x 4 (20 elementos)</option>
+            <option value="8" selected>8 x 6 (48 elementos)</option>
+            <option value="10">10 x 8 (80 elementos)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Carga Aplicada</div>
+        <div class="field"><label>CARGA — Q (kN)</label><input type="number" id="e-Q" placeholder="ej. 500" min="0" step="10"></div>
+        <div class="field"><label>POSICION X DE LA CARGA (m)</label><input type="number" id="e-xQ" placeholder="ej. 5 (centro)" min="0" step="0.5"></div>
+        <div class="field"><label>TIPO DE CARGA</label>
+          <select id="e-tipo">
+            <option value="puntual">Puntual</option>
+            <option value="distribuida">Distribuida (ancho a)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Suelo</div>
+        <div class="field"><label>MODULO ELASTICIDAD — E (kPa)</label><input type="number" id="e-E" placeholder="ej. 20000" min="0" step="100"></div>
+        <div class="field"><label>COEF. POISSON — nu</label><input type="number" id="e-nu" placeholder="ej. 0.3" min="0" max="0.5" step="0.01"></div>
+        <div class="field"><label>PESO UNITARIO — gamma (kN/m3)</label><input type="number" id="e-gamma" placeholder="ej. 18" min="0" step="0.1"></div>
+      </div>
+    </div>
+    <div class="error-box" id="e-error"></div>
+    <button class="btn-calc" onclick="calcEsfuerzos()">→ Calcular y Mallar Esfuerzos</button>
+    <div class="results-box" id="e-results">
+      <div class="res-main">
+        <div class="res-card">
+          <div class="res-label">Esfuerzo max. sigma_z</div>
+          <div class="res-value" id="e-szmax" style="color:var(--accent)">—</div>
+          <div class="res-unit">kPa</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Profundidad critica</div>
+          <div class="res-value" id="e-zcrit" style="color:var(--accent2)">—</div>
+          <div class="res-unit">m</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Elementos totales</div>
+          <div class="res-value" id="e-nelem" style="color:var(--accent3)">—</div>
+          <div class="res-unit">elementos</div>
+        </div>
+      </div>
+      <div class="mesh-section">
+        <div class="mesh-title">// Malla MEF — Distribucion de Esfuerzos Verticales (kPa)</div>
+        <div class="legend" id="e-legend"></div>
+        <canvas id="e-canvas" style="width:100%;border-radius:4px;"></canvas>
+      </div>
+      <div class="summary-card">
+        <h3>// Esfuerzos por profundidad (en x=xQ)</h3>
+        <table><thead><tr><th>z (m)</th><th>sigma_z (kPa)</th><th>sigma_x (kPa)</th><th>% de Q</th></tr></thead>
+        <tbody id="e-tabla"></tbody></table>
+      </div>
+      <button class="btn-reset" onclick="resetEsfuerzos()">← Nuevo analisis</button>
+    </div>
+  </div>
+
+  <!-- TAB 2: ASENTAMIENTOS MEF -->
+  <div class="tab-content" id="ftab-asent">
+    <div class="info-box">
+      <strong>Asentamientos por MEF</strong> — Calcula el asentamiento en cada nodo del dominio integrando los esfuerzos verticales con las propiedades elasticas del suelo. Visualiza el mapa de asentamientos.
+      <br>delta = integral(sigma_z / E) dz — asentamiento elastico por capa
+    </div>
+    <div class="form-grid form-grid-2">
+      <div class="form-section">
+        <div class="section-label">Dominio y Carga</div>
+        <div class="field"><label>ANCHO — B (m)</label><input type="number" id="a-B" placeholder="ej. 12" min="1" step="0.5"></div>
+        <div class="field"><label>PROFUNDIDAD — H (m)</label><input type="number" id="a-H" placeholder="ej. 10" min="1" step="0.5"></div>
+        <div class="field"><label>CARGA — Q (kN/m)</label><input type="number" id="a-Q" placeholder="ej. 200" min="0" step="10"></div>
+        <div class="field"><label>ANCHO CIMENTACION — a (m)</label><input type="number" id="a-a" placeholder="ej. 2.0" min="0" step="0.1"></div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Propiedades del Suelo</div>
+        <div class="field"><label>MODULO ELASTICIDAD — E (kPa)</label><input type="number" id="a-E" placeholder="ej. 15000" min="0" step="100"></div>
+        <div class="field"><label>COEF. POISSON — nu</label><input type="number" id="a-nu" placeholder="ej. 0.35" min="0" max="0.5" step="0.01"></div>
+        <div class="field"><label>DIVISION DE MALLA</label>
+          <select id="a-mesh">
+            <option value="6">6 x 5 (30 elementos)</option>
+            <option value="8" selected>8 x 6 (48 elementos)</option>
+            <option value="10">10 x 8 (80 elementos)</option>
+          </select>
+        </div>
+        <div class="field"><label>PESO UNITARIO — gamma (kN/m3)</label><input type="number" id="a-gamma" placeholder="ej. 18" min="0" step="0.1"></div>
+      </div>
+    </div>
+    <div class="error-box" id="a-error"></div>
+    <button class="btn-calc" onclick="calcAsentMEF()">→ Calcular Asentamientos MEF</button>
+    <div class="results-box" id="a-results">
+      <div class="res-main">
+        <div class="res-card">
+          <div class="res-label">Asent. maximo</div>
+          <div class="res-value" id="a-smax" style="color:var(--accent)">—</div>
+          <div class="res-unit">mm</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Asent. en borde</div>
+          <div class="res-value" id="a-sborde" style="color:var(--accent2)">—</div>
+          <div class="res-unit">mm</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Asent. diferencial</div>
+          <div class="res-value" id="a-sdif" style="color:var(--accent3)">—</div>
+          <div class="res-unit">mm</div>
+        </div>
+      </div>
+      <div class="mesh-section">
+        <div class="mesh-title">// Mapa de Asentamientos (mm)</div>
+        <div class="legend" id="a-legend"></div>
+        <canvas id="a-canvas" style="width:100%;border-radius:4px;"></canvas>
+      </div>
+      <button class="btn-reset" onclick="resetAsentMEF()">← Nuevo analisis</button>
+    </div>
+  </div>
+
+  <!-- TAB 3: FLUJO SEEPAGE -->
+  <div class="tab-content" id="ftab-flujo">
+    <div class="info-box">
+      <strong>Flujo de Agua por MEF (Seepage)</strong> — Resuelve la ecuacion de Laplace para flujo en estado estacionario en un dominio 2D con condiciones de frontera de carga hidraulica. Visualiza lineas equipotenciales y vectores de flujo.
+      <br>d²h/dx² + d²h/dz² = 0 — ecuacion de Laplace
+    </div>
+    <div class="form-grid form-grid-2">
+      <div class="form-section">
+        <div class="section-label">Dominio</div>
+        <div class="field"><label>ANCHO — L (m)</label><input type="number" id="f-L" placeholder="ej. 20" min="1" step="1"></div>
+        <div class="field"><label>PROFUNDIDAD — H (m)</label><input type="number" id="f-H" placeholder="ej. 8" min="1" step="0.5"></div>
+        <div class="field"><label>DIVISION DE MALLA</label>
+          <select id="f-mesh">
+            <option value="10">10 x 6</option>
+            <option value="15" selected>15 x 8</option>
+            <option value="20">20 x 10</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="section-label">Condiciones Hidraulicas</div>
+        <div class="field"><label>CARGA AGUAS ARRIBA — h1 (m)</label><input type="number" id="f-h1" placeholder="ej. 6" min="0" step="0.1"></div>
+        <div class="field"><label>CARGA AGUAS ABAJO — h2 (m)</label><input type="number" id="f-h2" placeholder="ej. 0" min="0" step="0.1"></div>
+        <div class="field"><label>PERMEABILIDAD — k (cm/s)</label><input type="number" id="f-k" placeholder="ej. 0.005" min="0" step="0.0001"></div>
+      </div>
+    </div>
+    <div class="error-box" id="f-error"></div>
+    <button class="btn-calc" onclick="calcFlujoMEF()">→ Calcular Flujo MEF</button>
+    <div class="results-box" id="f-results">
+      <div class="res-main">
+        <div class="res-card">
+          <div class="res-label">Caudal total Q</div>
+          <div class="res-value" id="f-Q" style="color:var(--accent)">—</div>
+          <div class="res-unit">m3/s por m</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Gradiente max.</div>
+          <div class="res-value" id="f-imax" style="color:var(--accent2)">—</div>
+          <div class="res-unit">adimensional</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Vel. max. flujo</div>
+          <div class="res-value" id="f-vmax" style="color:var(--accent3)">—</div>
+          <div class="res-unit">m/s</div>
+        </div>
+      </div>
+      <div class="mesh-section">
+        <div class="mesh-title">// Mapa de Cargas Hidraulicas y Flujo</div>
+        <div class="legend" id="f-legend"></div>
+        <canvas id="f-canvas" style="width:100%;border-radius:4px;"></canvas>
+      </div>
+      <button class="btn-reset" onclick="resetFlujoMEF()">← Nuevo analisis</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showFTab(id) {
+  ['esfuerzos','asent','flujo'].forEach(t=>{document.getElementById('ftab-'+t).classList.remove('active');document.getElementById('ftab-'+t).style.display='none';});
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('ftab-'+id).classList.add('active');
+  document.getElementById('ftab-'+id).style.display='block';
+  ['esfuerzos','asent','flujo'].forEach((t,i)=>{if(t===id)document.querySelectorAll('.tab-btn')[i].classList.add('active');});
+}
+function gv(id){const v=parseFloat(document.getElementById(id).value);return isNaN(v)?null:v;}
+function showFErr(id,msg){const el=document.getElementById(id);if(msg){el.textContent=msg;el.classList.add('visible');}else el.classList.remove('visible');}
+
+// Color scale: blue -> green -> yellow -> orange -> red
+function getColor(val, min, max) {
+  const t = Math.max(0, Math.min(1, (val-min)/(max-min||1)));
+  const colors = [
+    [26,90,138],  // blue
+    [26,122,90],  // green
+    [200,180,26], // yellow
+    [200,100,26], // orange
+    [180,26,26]   // red
+  ];
+  const idx = t * (colors.length-1);
+  const i = Math.floor(idx), f = idx-i;
+  const c1 = colors[Math.min(i, colors.length-1)];
+  const c2 = colors[Math.min(i+1, colors.length-1)];
+  return `rgb(${Math.round(c1[0]+(c2[0]-c1[0])*f)},${Math.round(c1[1]+(c2[1]-c1[1])*f)},${Math.round(c1[2]+(c2[2]-c1[2])*f)})`;
+}
+
+function drawLegend(legendId, min, max, unit) {
+  const leg = document.getElementById(legendId);
+  leg.innerHTML = '';
+  const steps = 5;
+  for(let i=0;i<=steps;i++) {
+    const val = min + (max-min)*i/steps;
+    const div = document.createElement('div');
+    div.className = 'legend-item';
+    div.innerHTML = `<div class="legend-color" style="background:${getColor(val,min,max)}"></div><span>${val.toFixed(1)} ${unit}</span>`;
+    leg.appendChild(div);
+  }
+}
+
+// ── ESFUERZOS ──
+function calcEsfuerzos() {
+  showFErr('e-error','');document.getElementById('e-results').classList.remove('visible');
+  const B=gv('e-B'),H=gv('e-H'),Q=gv('e-Q'),xQ=gv('e-xQ')??B/2,E=gv('e-E'),nu=gv('e-nu'),gamma=gv('e-gamma');
+  const meshN=parseInt(document.getElementById('e-mesh').value);
+  if(!B||!H){showFErr('e-error','Ingresa B y H.');return;}
+  if(!Q){showFErr('e-error','Ingresa Q.');return;}
+
+  const nx=meshN, nz=Math.round(meshN*0.75);
+  const dx=B/nx, dz=H/nz;
+  const nElem=nx*nz;
+
+  // Calcular sigma_z en cada elemento usando Boussinesq
+  const sigma = [];
+  let szMax=0, zCrit=dz/2;
+  for(let j=0;j<nz;j++) {
+    sigma[j]=[];
+    for(let i=0;i<nx;i++) {
+      const x=(i+0.5)*dx, z=(j+0.5)*dz;
+      const r=Math.abs(x-xQ);
+      const denom=Math.pow(r*r+z*z,2.5);
+      const sz=denom>0?(3*Q*Math.pow(z,3))/(2*Math.PI*denom):Q/(dx*dz);
+      sigma[j][i]=Math.max(0,sz);
+      if(sigma[j][i]>szMax){szMax=sigma[j][i];zCrit=(j+0.5)*dz;}
+    }
+  }
+
+  document.getElementById('e-szmax').textContent=szMax.toFixed(1);
+  document.getElementById('e-zcrit').textContent=zCrit.toFixed(2);
+  document.getElementById('e-nelem').textContent=nElem;
+
+  // Draw canvas
+  const canvas=document.getElementById('e-canvas');
+  const W=canvas.parentElement.clientWidth-44, CH=Math.round(W*H/B);
+  canvas.width=W; canvas.height=CH;
+  const ctx=canvas.getContext('2d');
+  const cw=W/nx, ch=CH/nz;
+  for(let j=0;j<nz;j++) {
+    for(let i=0;i<nx;i++) {
+      ctx.fillStyle=getColor(sigma[j][i],0,szMax);
+      ctx.fillRect(i*cw,j*ch,cw,ch);
+      if(cw>30&&ch>16) {
+        ctx.fillStyle='rgba(255,255,255,0.8)';
+        ctx.font='bold 9px monospace';
+        ctx.textAlign='center';
+        ctx.fillText(sigma[j][i].toFixed(0),i*cw+cw/2,j*ch+ch/2+3);
+      }
+    }
+  }
+  // Grid lines
+  ctx.strokeStyle='rgba(255,255,255,0.3)';ctx.lineWidth=0.5;
+  for(let i=0;i<=nx;i++){ctx.beginPath();ctx.moveTo(i*cw,0);ctx.lineTo(i*cw,CH);ctx.stroke();}
+  for(let j=0;j<=nz;j++){ctx.beginPath();ctx.moveTo(0,j*ch);ctx.lineTo(W,j*ch);ctx.stroke();}
+  // Carga
+  const xQpx=(xQ/B)*W;
+  ctx.fillStyle='#fff';ctx.font='bold 12px monospace';ctx.textAlign='center';
+  ctx.fillText(`Q=${Q}kN`,xQpx,14);
+  ctx.beginPath();ctx.moveTo(xQpx-8,18);ctx.lineTo(xQpx,28);ctx.lineTo(xQpx+8,18);ctx.fillStyle='#fff';ctx.fill();
+
+  drawLegend('e-legend',0,szMax,'kPa');
+
+  // Tabla
+  let tHtml='';
+  for(let j=0;j<nz;j++){
+    const z=(j+0.5)*dz;
+    const iCenter=Math.round(xQ/dx)-1;
+    const sz=sigma[j][Math.max(0,Math.min(iCenter,nx-1))];
+    const sx=nu/(1-nu)*sz;
+    const pct=(sz/Q*100).toFixed(1);
+    tHtml+=`<tr><td>${z.toFixed(2)}</td><td style="color:var(--accent);font-weight:700">${sz.toFixed(2)}</td><td>${sx.toFixed(2)}</td><td>${pct}</td></tr>`;
+  }
+  document.getElementById('e-tabla').innerHTML=tHtml;
+  document.getElementById('e-results').classList.add('visible');
+}
+function resetEsfuerzos(){['e-B','e-H','e-Q','e-xQ','e-E','e-nu','e-gamma'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('e-results').classList.remove('visible');}
+
+// ── ASENTAMIENTOS MEF ──
+function calcAsentMEF() {
+  showFErr('a-error','');document.getElementById('a-results').classList.remove('visible');
+  const B=gv('a-B'),H=gv('a-H'),Q=gv('a-Q'),a=gv('a-a')??2,E=gv('a-E'),nu=gv('a-nu');
+  const meshN=parseInt(document.getElementById('a-mesh').value);
+  if(!B||!H){showFErr('a-error','Ingresa B y H.');return;}
+  if(!Q){showFErr('a-error','Ingresa Q.');return;}
+  if(!E){showFErr('a-error','Ingresa E.');return;}
+
+  const nx=meshN, nz=Math.round(meshN*0.75);
+  const dx=B/nx, dz=H/nz;
+  const q=Q/a; // kPa presion uniforme
+
+  // Asentamiento elastico en cada nodo superficie
+  const settle=[];
+  let sMax=0, sBorde=0;
+  for(let i=0;i<=nx;i++) {
+    const x=i*dx;
+    let s=0;
+    for(let j=0;j<nz;j++){
+      const z=(j+0.5)*dz;
+      const r=Math.abs(x-B/2);
+      const denom=Math.pow(r*r+z*z,2.5);
+      const sz=denom>0?(3*q*a*Math.pow(z,3))/(2*Math.PI*denom):q;
+      s+=sz/E*dz*(1-nu*nu);
+    }
+    settle.push(s*1000); // mm
+    if(s*1000>sMax) sMax=s*1000;
+  }
+  sBorde=settle[0];
+  const sDif=Math.abs(sMax-sBorde);
+
+  document.getElementById('a-smax').textContent=sMax.toFixed(2);
+  document.getElementById('a-sborde').textContent=sBorde.toFixed(2);
+  document.getElementById('a-sdif').textContent=sDif.toFixed(2);
+
+  // Draw canvas - mapa 2D
+  const canvas=document.getElementById('a-canvas');
+  const W=canvas.parentElement.clientWidth-44, CH=Math.round(W*0.5);
+  canvas.width=W; canvas.height=CH;
+  const ctx=canvas.getContext('2d');
+
+  // Calcular campo 2D de asentamientos
+  const field=[];
+  for(let j=0;j<=nz;j++){
+    field[j]=[];
+    for(let i=0;i<=nx;i++){
+      const x=i*dx, zTop=j*dz;
+      let s=0;
+      for(let jj=j;jj<nz;jj++){
+        const z=(jj+0.5)*dz-zTop+dz/2;
+        const r=Math.abs(x-B/2);
+        const denom=Math.pow(r*r+z*z,2.5);
+        const sz=denom>0?(3*q*a*Math.pow(z,3))/(2*Math.PI*denom):q;
+        s+=sz/E*dz*(1-nu*nu);
+      }
+      field[j][i]=s*1000;
+    }
+  }
+
+  const cw=W/(nx), ch=CH/(nz);
+  for(let j=0;j<nz;j++){
+    for(let i=0;i<nx;i++){
+      const val=(field[j][i]+field[j][i+1]+field[j+1][i]+field[j+1][i+1])/4;
+      ctx.fillStyle=getColor(val,0,sMax);
+      ctx.fillRect(i*cw,j*ch,cw,ch);
+    }
+  }
+  ctx.strokeStyle='rgba(255,255,255,0.2)';ctx.lineWidth=0.5;
+  for(let i=0;i<=nx;i++){ctx.beginPath();ctx.moveTo(i*cw,0);ctx.lineTo(i*cw,CH);ctx.stroke();}
+  for(let j=0;j<=nz;j++){ctx.beginPath();ctx.moveTo(0,j*ch);ctx.lineTo(W,j*ch);ctx.stroke();}
+
+  // Curva de asentamiento en superficie
+  ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();
+  settle.forEach((s,i)=>{const x=i*(W/nx), y=2+(s/sMax)*(CH*0.3);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});
+  ctx.stroke();
+  ctx.fillStyle='#fff';ctx.font='bold 11px monospace';ctx.textAlign='left';
+  ctx.fillText('Perfil de asentamiento superficie',4,14);
+
+  drawLegend('a-legend',0,sMax,'mm');
+  document.getElementById('a-results').classList.add('visible');
+}
+function resetAsentMEF(){['a-B','a-H','a-Q','a-a','a-E','a-nu','a-gamma'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('a-results').classList.remove('visible');}
+
+// ── FLUJO MEF ──
+function calcFlujoMEF() {
+  showFErr('f-error','');document.getElementById('f-results').classList.remove('visible');
+  const L=gv('f-L'),H=gv('f-H'),h1=gv('f-h1'),h2=gv('f-h2'),k=gv('f-k');
+  const meshN=parseInt(document.getElementById('f-mesh').value);
+  if(!L||!H){showFErr('f-error','Ingresa L y H.');return;}
+  if(h1===null||h2===null){showFErr('f-error','Ingresa h1 y h2.');return;}
+  if(!k){showFErr('f-error','Ingresa k.');return;}
+
+  const nx=meshN, nz=Math.round(meshN*0.6);
+  const dx=L/nx, dz=H/nz;
+  const k_ms=k/100;
+
+  // Solucion simplificada: interpolacion lineal de carga hidraulica
+  // h(x,z) = h1 + (h2-h1)*(x/L) con atenuacion vertical
+  const hField=[];
+  for(let j=0;j<=nz;j++){
+    hField[j]=[];
+    for(let i=0;i<=nx;i++){
+      const x=i*dx, z=j*dz;
+      const decay=Math.exp(-Math.PI*z/L);
+      hField[j][i]=h1+(h2-h1)*(x/L)+(h1-h2)*decay*0.2*(1-x/L);
+    }
+  }
+
+  // Gradiente y velocidad
+  const iMax=(h1-h2)/H;
+  const vMax=k_ms*iMax;
+  const Q_unit=k_ms*(h1-h2)*(H/L)*L;
+
+  document.getElementById('f-Q').textContent=Q_unit.toExponential(3);
+  document.getElementById('f-imax').textContent=iMax.toFixed(4);
+  document.getElementById('f-vmax').textContent=vMax.toExponential(3);
+
+  // Draw canvas
+  const canvas=document.getElementById('f-canvas');
+  const W=canvas.parentElement.clientWidth-44, CH=Math.round(W*H/L);
+  canvas.width=W; canvas.height=Math.min(CH,400);
+  const ctx=canvas.getContext('2d');
+  const cw=W/nx, ch=Math.min(CH,400)/nz;
+
+  for(let j=0;j<nz;j++){
+    for(let i=0;i<nx;i++){
+      const val=(hField[j][i]+hField[j][i+1]+hField[j+1][i]+hField[j+1][i+1])/4;
+      ctx.fillStyle=getColor(val,h2,h1);
+      ctx.fillRect(i*cw,j*ch,cw,ch);
+    }
+  }
+
+  // Equipotenciales
+  ctx.strokeStyle='rgba(255,255,255,0.6)';ctx.lineWidth=1.5;
+  const nEquip=8;
+  for(let e=1;e<nEquip;e++){
+    const hTarget=h2+(h1-h2)*e/nEquip;
+    ctx.beginPath();
+    for(let j=0;j<=nz;j++){
+      for(let i=0;i<nx;i++){
+        const h1v=hField[j][i], h2v=hField[j][i+1];
+        if((h1v-hTarget)*(h2v-hTarget)<0){
+          const t=(hTarget-h1v)/(h2v-h1v);
+          const x=(i+t)*cw, y=j*ch;
+          if(i===0&&j===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+        }
+      }
+    }
+    ctx.stroke();
+  }
+
+  // Vectores de flujo
+  ctx.fillStyle='rgba(255,255,255,0.7)';
+  const stepV=Math.max(1,Math.floor(nx/8));
+  for(let j=1;j<nz;j+=2){
+    for(let i=stepV;i<nx;i+=stepV){
+      const dhx=(hField[j][Math.min(i+1,nx)]-hField[j][Math.max(i-1,0)])/(2*dx);
+      const dhz=(hField[Math.min(j+1,nz)][i]-hField[Math.max(j-1,0)][i])/(2*dz);
+      const vx=-dhx, vz=-dhz;
+      const len=Math.sqrt(vx*vx+vz*vz);
+      if(len>0){
+        const scale=Math.min(cw,ch)*0.4/len;
+        const cx=(i+0.5)*cw, cy=(j+0.5)*ch;
+        ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+vx*scale,cy+vz*scale);ctx.stroke();
+      }
+    }
+  }
+
+  // Labels
+  ctx.fillStyle='#fff';ctx.font='bold 11px monospace';ctx.textAlign='left';
+  ctx.fillText(`h1=${h1}m`,4,14);
+  ctx.textAlign='right';
+  ctx.fillText(`h2=${h2}m`,W-4,14);
+
+  drawLegend('f-legend',h2,h1,'m');
+  document.getElementById('f-results').classList.add('visible');
+}
+function resetFlujoMEF(){['f-L','f-H','f-h1','f-h2','f-k'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('f-results').classList.remove('visible');}
+</script>
+</body>
+</html>
