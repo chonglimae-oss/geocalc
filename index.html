@@ -186,6 +186,19 @@ tr:hover td { background: var(--surface2); }
   .result-grid, .main-results { grid-template-columns: 1fr; }
   .summary-grid, .stats-grid { grid-template-columns: repeat(2,1fr); }
 }
+
+/* IFRAME TOOL */
+.iframe-page { display: none; padding-top: 64px; height: 100vh; }
+.iframe-page.active { display: flex; flex-direction: column; }
+.iframe-header { background: var(--surface); border-bottom: 2px solid var(--border); padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.04); flex-shrink: 0; }
+.iframe-title { font-family: 'Fraunces', serif; font-size: 1.2rem; font-weight: 700; color: var(--dark); }
+.iframe-subtitle { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: 1px; margin-top: 2px; }
+.iframe-actions { display: flex; gap: 8px; align-items: center; }
+.iframe-back { background: none; border: 2px solid var(--border); color: var(--muted); padding: 8px 16px; font-family: 'DM Mono', monospace; font-size: 12px; cursor: pointer; border-radius: 6px; transition: all 0.2s; font-weight: 600; }
+.iframe-back:hover { border-color: var(--accent); color: var(--accent); }
+.iframe-open { background: var(--accent); color: #fff; border: none; padding: 8px 16px; font-family: 'DM Mono', monospace; font-size: 12px; cursor: pointer; border-radius: 6px; transition: all 0.2s; font-weight: 600; text-decoration: none; display: inline-block; }
+.iframe-open:hover { filter: brightness(0.9); }
+.tool-iframe { flex: 1; border: none; width: 100%; background: var(--bg); }
 </style>
 </head>
 <body>
@@ -1297,119 +1310,95 @@ function calcSInfinito(){
 function resetSInfinito(){['si-beta','si-z','si-c','si-phi','si-gamma','si-gammaw','si-hw'].forEach(id=>{document.getElementById(id).value='';});document.getElementById('si-results').classList.remove('visible');}
 </script>
 
+
 <!-- COMPACTACION -->
-<div class="page" id="page-compact">
-  <div class="tool-page">
-    <div class="page-header">
-      <div><div style="font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;">// HERRAMIENTA 07</div><h2 style="color:#c8d840">Compac<br>tacion</h2></div>
-      <button class="back-btn" onclick="showPage('home')">&#8592; Inicio</button>
+<div class="iframe-page" id="page-compact">
+  <div class="iframe-header">
+    <div>
+      <div class="iframe-title" style="color:#5a8a1a">🔨 Compactacion</div>
+      <div class="iframe-subtitle">// HERRAMIENTA 07 · Proctor · Control de Campo · Linea de Saturacion</div>
     </div>
-    <div class="divider"></div>
-    <div style="background:rgba(200,216,64,0.05);border:1px solid rgba(200,216,64,0.2);border-radius:4px;padding:32px 24px;text-align:center;">
-      <div style="font-size:32px;margin-bottom:16px;">🔨</div>
-      <div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:#c8d840;margin-bottom:12px;">Herramienta de Compactacion</div>
-      <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:24px;">
-        Curva Proctor · Control de Campo · Linea de Saturacion<br>
-        Densidad maxima seca · Humedad optima · Grado de compactacion
-      </div>
-      <a href="compactacion.html" style="display:inline-block;background:#c8d840;color:var(--dark);padding:14px 32px;border-radius:3px;font-family:'Fraunces',serif;font-size:16px;font-weight:700;text-decoration:none;">&#8594; Abrir Herramienta</a>
+    <div class="iframe-actions">
+      <a href="compactacion.html" target="_blank" class="iframe-open">↗ Abrir en nueva pestana</a>
+      <button class="iframe-back" onclick="showPage('home')">← Inicio</button>
     </div>
   </div>
+  <iframe class="tool-iframe" id="iframe-compact" src="" data-src="compactacion.html" title="Compactacion"></iframe>
 </div>
+
 <!-- PILOTES -->
-<div class="page" id="page-pilotes">
-  <div class="tool-page">
-    <div class="page-header">
-      <div><div style="font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;">// HERRAMIENTA 08</div><h2 style="color:#d86ad8">Capacidad<br>de Pilotes</h2></div>
-      <button class="back-btn" onclick="showPage('home')">← Inicio</button>
+<div class="iframe-page" id="page-pilotes">
+  <div class="iframe-header">
+    <div>
+      <div class="iframe-title" style="color:#9a3ab8">🏗️ Pilotes</div>
+      <div class="iframe-subtitle">// HERRAMIENTA 08 · Arcilla (Alpha) · Arena (Beta) · Grupo de Pilotes</div>
     </div>
-    <div class="divider"></div>
-    <div style="background:rgba(216,106,216,0.05);border:1px solid rgba(216,106,216,0.2);border-radius:4px;padding:32px 24px;text-align:center;">
-      <div style="font-size:32px;margin-bottom:16px;">🏗️</div>
-      <div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:#d86ad8;margin-bottom:12px;">Herramienta de Pilotes</div>
-      <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:24px;">
-        Metodo Alpha (Arcilla) · Metodo Beta (Arena) · Grupo de Pilotes<br>
-        Capacidad por punta · Capacidad por fuste · Eficiencia de grupo
-      </div>
-      <a href="pilotes.html" style="display:inline-block;background:#d86ad8;color:var(--dark);padding:14px 32px;border-radius:3px;font-family:'Fraunces',serif;font-size:16px;font-weight:700;text-decoration:none;">→ Abrir Herramienta</a>
+    <div class="iframe-actions">
+      <a href="pilotes.html" target="_blank" class="iframe-open">↗ Abrir en nueva pestana</a>
+      <button class="iframe-back" onclick="showPage('home')">← Inicio</button>
     </div>
   </div>
+  <iframe class="tool-iframe" id="iframe-pilotes" src="" data-src="pilotes.html" title="Pilotes"></iframe>
 </div>
-<!-- PRESIONES -->
-<div class="page" id="page-presiones">
-  <div class="tool-page">
-    <div class="page-header">
-      <div><div style="font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;font-weight:700;">// HERRAMIENTA 09</div><h2 style="color:#8b5e1a">Presiones<br>de Tierra</h2></div>
-      <button class="back-btn" onclick="showPage('home')">← Inicio</button>
+
+<!-- PRESIONES DE TIERRA -->
+<div class="iframe-page" id="page-presiones">
+  <div class="iframe-header">
+    <div>
+      <div class="iframe-title" style="color:#8b5e1a">⬅️ Presiones de Tierra</div>
+      <div class="iframe-subtitle">// HERRAMIENTA 09 · Rankine · Coulomb · En Reposo (K0)</div>
     </div>
-    <div class="divider"></div>
-    <div style="background:rgba(139,94,26,0.05);border:2px solid rgba(139,94,26,0.2);border-radius:8px;padding:32px 24px;text-align:center;">
-      <div style="font-size:32px;margin-bottom:16px;">⬅️</div>
-      <div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:#8b5e1a;margin-bottom:12px;">Herramienta de Presiones de Tierra</div>
-      <div style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:24px;">
-        Rankine · Coulomb · Presion en Reposo (K0)<br>
-        Empujes activos · Empujes pasivos · Diagramas de presion
-      </div>
-      <a href="presiones.html" style="display:inline-block;background:#8b5e1a;color:#fff;padding:14px 32px;border-radius:8px;font-family:'Fraunces',serif;font-size:16px;font-weight:700;text-decoration:none;">→ Abrir Herramienta</a>
+    <div class="iframe-actions">
+      <a href="presiones.html" target="_blank" class="iframe-open">↗ Abrir en nueva pestana</a>
+      <button class="iframe-back" onclick="showPage('home')">← Inicio</button>
     </div>
   </div>
+  <iframe class="tool-iframe" id="iframe-presiones" src="" data-src="presiones.html" title="Presiones de Tierra"></iframe>
 </div>
+
 <!-- PERMEABILIDAD -->
-<div class="page" id="page-permea">
-  <div class="tool-page">
-    <div class="page-header">
-      <div><div style="font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;font-weight:700;">// HERRAMIENTA 10</div><h2 style="color:#1a5a8a">Permea<br>bilidad</h2></div>
-      <button class="back-btn" onclick="showPage('home')">← Inicio</button>
+<div class="iframe-page" id="page-permea">
+  <div class="iframe-header">
+    <div>
+      <div class="iframe-title" style="color:#1a5a8a">💧 Permeabilidad</div>
+      <div class="iframe-subtitle">// HERRAMIENTA 10 · Ley de Darcy · Suelos en Capas · Red de Flujo</div>
     </div>
-    <div class="divider"></div>
-    <div style="background:rgba(26,90,138,0.05);border:2px solid rgba(26,90,138,0.2);border-radius:8px;padding:32px 24px;text-align:center;">
-      <div style="font-size:32px;margin-bottom:16px;">💧</div>
-      <div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:#1a5a8a;margin-bottom:12px;">Herramienta de Permeabilidad</div>
-      <div style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:24px;">
-        Ley de Darcy · Suelos Estratificados · Red de Flujo<br>
-        Caudal de filtracion · kh y kv equivalentes · Factor de forma
-      </div>
-      <a href="permeabilidad.html" style="display:inline-block;background:#1a5a8a;color:#fff;padding:14px 32px;border-radius:8px;font-family:'Fraunces',serif;font-size:16px;font-weight:700;text-decoration:none;">→ Abrir Herramienta</a>
+    <div class="iframe-actions">
+      <a href="permeabilidad.html" target="_blank" class="iframe-open">↗ Abrir en nueva pestana</a>
+      <button class="iframe-back" onclick="showPage('home')">← Inicio</button>
     </div>
   </div>
+  <iframe class="tool-iframe" id="iframe-permea" src="" data-src="permeabilidad.html" title="Permeabilidad"></iframe>
 </div>
-<!-- CORTE -->
-<div class="page" id="page-corte">
-  <div class="tool-page">
-    <div class="page-header">
-      <div><div style="font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;font-weight:700;">// HERRAMIENTA 11</div><h2 style="color:#7a1a5a">Resistencia<br>al Corte</h2></div>
-      <button class="back-btn" onclick="showPage('home')">← Inicio</button>
+
+<!-- RESISTENCIA AL CORTE -->
+<div class="iframe-page" id="page-corte">
+  <div class="iframe-header">
+    <div>
+      <div class="iframe-title" style="color:#7a1a5a">✂️ Resistencia al Corte</div>
+      <div class="iframe-subtitle">// HERRAMIENTA 11 · Corte Directo · Triaxial · Mohr-Coulomb</div>
     </div>
-    <div class="divider"></div>
-    <div style="background:rgba(122,26,90,0.05);border:2px solid rgba(122,26,90,0.2);border-radius:8px;padding:32px 24px;text-align:center;">
-      <div style="font-size:32px;margin-bottom:16px;">✂️</div>
-      <div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:#7a1a5a;margin-bottom:12px;">Herramienta de Resistencia al Corte</div>
-      <div style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:24px;">
-        Corte Directo · Triaxial UU/CU/CD · Mohr-Coulomb<br>
-        Parametros c y phi · Circulos de Mohr · Factor de seguridad
-      </div>
-      <a href="corte.html" style="display:inline-block;background:#7a1a5a;color:#fff;padding:14px 32px;border-radius:8px;font-family:'Fraunces',serif;font-size:16px;font-weight:700;text-decoration:none;">→ Abrir Herramienta</a>
+    <div class="iframe-actions">
+      <a href="corte.html" target="_blank" class="iframe-open">↗ Abrir en nueva pestana</a>
+      <button class="iframe-back" onclick="showPage('home')">← Inicio</button>
     </div>
   </div>
+  <iframe class="tool-iframe" id="iframe-corte" src="" data-src="corte.html" title="Resistencia al Corte"></iframe>
 </div>
-<!-- MEF -->
-<div class="page" id="page-mef">
-  <div class="tool-page">
-    <div class="page-header">
-      <div><div style="font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;font-weight:700;">// HERRAMIENTA 12</div><h2 style="color:#1a5a3a">Elementos<br>Finitos</h2></div>
-      <button class="back-btn" onclick="showPage('home')">← Inicio</button>
+
+<!-- ELEMENTOS FINITOS -->
+<div class="iframe-page" id="page-mef">
+  <div class="iframe-header">
+    <div>
+      <div class="iframe-title" style="color:#1a5a3a">🔬 Elementos Finitos</div>
+      <div class="iframe-subtitle">// HERRAMIENTA 12 · Esfuerzos · Asentamientos · Flujo Seepage</div>
     </div>
-    <div class="divider"></div>
-    <div style="background:rgba(26,90,58,0.05);border:2px solid rgba(26,90,58,0.2);border-radius:8px;padding:32px 24px;text-align:center;">
-      <div style="font-size:32px;margin-bottom:16px;">🔬</div>
-      <div style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;color:#1a5a3a;margin-bottom:12px;">Herramienta de Elementos Finitos</div>
-      <div style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:24px;">
-        Esfuerzos · Asentamientos · Flujo Seepage<br>
-        Malla visual 2D · Escala de colores · Equipotenciales
-      </div>
-      <a href="mef.html" style="display:inline-block;background:#1a5a3a;color:#fff;padding:14px 32px;border-radius:8px;font-family:'Fraunces',serif;font-size:16px;font-weight:700;text-decoration:none;">→ Abrir Herramienta</a>
+    <div class="iframe-actions">
+      <a href="mef.html" target="_blank" class="iframe-open">↗ Abrir en nueva pestana</a>
+      <button class="iframe-back" onclick="showPage('home')">← Inicio</button>
     </div>
   </div>
+  <iframe class="tool-iframe" id="iframe-mef" src="" data-src="mef.html" title="Elementos Finitos"></iframe>
 </div>
 </body>
 </html>
